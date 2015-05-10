@@ -8,7 +8,7 @@ var bodyParser = require('body-parser');
 var mongoose = require('mongoose');
 var moment = require('moment');
 
-//mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/chat');
+mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/chat');
 
 var routes = require('./routes/index');
 var users = require('./routes/users');

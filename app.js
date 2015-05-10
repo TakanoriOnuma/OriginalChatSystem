@@ -11,7 +11,7 @@ var moment = require('moment');
 mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/chat');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
+var roomCreation = require('./routes/roomCreation');
 
 var app = express();
 
@@ -28,7 +28,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/room-creation', roomCreation);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

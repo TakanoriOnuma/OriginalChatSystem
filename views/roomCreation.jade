@@ -7,8 +7,14 @@ block content
       label(for='title') タイトル：
       input#title(type='text', name='title')
     p
+      label(for='name') 名前：
+      input#name(type='text', name='name')
+    p
       label(for='detail') 詳細：
       br
       textarea#detail(name='detail', rows='10', cols='30')
     p
-      input(type='submit', value='部屋を作成する')
+      input#btn(type='submit', value='部屋を作成する')
+
+block scripts
+  script(src='javascripts/roomCreation.js')

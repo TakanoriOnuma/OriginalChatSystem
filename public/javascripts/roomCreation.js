@@ -13,21 +13,32 @@ function createRoom() {
 
   // 入力内容のチェック
   var check = function() {
+    var errMsg = '';
     // タイトルについてのチェック
     if(title === '') {
-      return false;
+      errMsg += 'タイトルがありません。\n';
     }
     // 名前についてのチェック
-    else if(name === '') {
-      return false;
+    if(name === '') {
+      errMsg += '名前がありません。\n';
     }
     // 詳細についてのチェック（未入力はOK）
-    return true;
+    return errMsg;
   };
 
+  // お知らせ内容の削除
+  var $info = $('.info');
+  $info.children().remove();
+
   // 入力に問題があればエラーを表示して終わる
-  if(!check()) {
-    alert('error');
+  var errMsg = check();
+  if(errMsg !== '') {
+    // 一番後ろの改行コードを削除
+    errMsg = errMsg.substring(0, errMsg.length - 1);
+    // エラー内容の追加
+    $.each(errMsg.split('\n'), function(index, elem) {
+      $info.append($('<li>').addClass('error').append(elem));
+    });
     return;
   }
 
@@ -35,5 +46,7 @@ function createRoom() {
 
   // 入力を禁止にする
   $('#fm input, textarea').attr('disabled', true);
+  $('#btn').val('部屋の作成完了');
 
+  $info.append($('<li>').addClass('info').append('部屋の登録が完了しました。'));
 }

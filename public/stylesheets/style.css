@@ -19,3 +19,7 @@ a {
   padding: 10px;
   margin: 0;
 }
+
+.error {
+  color: red;
+}

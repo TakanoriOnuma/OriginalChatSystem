@@ -6,3 +6,16 @@ body {
 a {
   color: #00B7FF;
 }
+
+.header {
+  background-color: white;
+  font-size: 20px;
+  font-weight: bold;
+  font-style: italic;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100%;
+  padding: 10px;
+  margin: 0;
+}

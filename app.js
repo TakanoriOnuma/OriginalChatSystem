@@ -30,6 +30,45 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 app.use('/room-creation', roomCreation);
 
+var Schema = mongoose.Schema;
+// roomスキーマの定義
+var roomSchema = new Schema({
+  title    : String,
+  creator  : String,
+  detail   : String,
+  created  : { type: Date, default: Date.now },
+  password : String
+});
+mongoose.model('Room', roomSchema);
+
+// /roomにPOSTアクセスしたとき、部屋を新規登録する
+app.post('/room', function(req, res) {
+  var title    = req.body.title;
+  var creator  = req.body.name;
+  // タイトルと作成者があればMongoDBに保存
+  if(title !== '' && creator !== '') {
+    var Room = mongoose.model('Room');
+    var room = new Room();
+    room.title    = title;
+    room.creator  = creator;
+    room.detail   = req.body.detail;
+    room.password = req.body.password;
+    room.save(function(err) {
+      // エラーがあれば
+      if(err) {
+        res.send(null);
+        return;
+      }
+    });
+
+    res.send(room._id);
+  }
+  else {
+    res.send(null);
+  }
+});
+
+
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   var err = new Error('Not Found');

@@ -43,6 +43,25 @@ function createRoom() {
   }
 
   // 入力がOKなら部屋の登録を行う
+  var sendObj = {
+    title    : title,
+    creator  : name,
+    detail   : detail,
+    password : ''       // とりあえずパスワードは空文字
+  };
+  var roomId = '';
+  $.post('/room', sendObj, function(res) {
+    roomId = res;
+    // ※ 非同期のせいでこの処理はほぼ無駄（混乱を招く可能性あり） ※ //
+    if(roomId === null) {
+      // 登録失敗のメッセージを送る
+      $info.children().remove();
+      $info.append($('<li>').addClass('error').append('DBの登録に失敗しました。'));
+      return;
+    }
+    console.log('roomId1:' + roomId);
+  });
+  console.log('roomId2:' + roomId);
 
   // 入力を禁止にする
   $('#fm input, textarea').attr('disabled', true);

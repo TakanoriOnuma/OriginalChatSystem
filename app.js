@@ -41,6 +41,15 @@ var roomSchema = new Schema({
 });
 mongoose.model('Room', roomSchema);
 
+// /roomにGETアクセスした時、部屋一覧を取得する
+app.get('/room', function(req, res) {
+  var Room = mongoose.model('Room');
+  // 全てのroomを取得して送る
+  Room.find({}, function(err, rooms) {
+    res.send(rooms);
+  });
+});
+
 // /roomにPOSTアクセスしたとき、部屋を新規登録する
 app.post('/room', function(req, res) {
   var title    = req.body.title;

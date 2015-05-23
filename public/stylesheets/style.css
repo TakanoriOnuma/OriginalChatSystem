@@ -5,6 +5,11 @@ body {
 
 a {
   color: #00B7FF;
+  text-decoration: none;
+}
+a:hover {
+  color: green;
+  text-decoration: underline;
 }
 
 .header {

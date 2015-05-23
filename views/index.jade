@@ -1,5 +1,28 @@
 extends layout
 
+block stylesheets
+  link(rel='stylesheet' href='stylesheets/index.css')
+
 block content
-  h1= title
-  p Welcome to #{title}
+  .roomList
+
+  a(href='room-creation')部屋の新規作成
+
+block scripts
+  // 部屋のテンプレート
+  <script type='text/x-handlebars-template' id='room-template'>
+  | {{#each this}}
+  |   <p>
+  |     <table>
+  |       <tr>
+  |         <td><h2><a href="chat?room={{_id}}">{{title}}</a></h2></td>
+  |         <td>作成者：{{creator}}</td>
+  |       </tr>
+  |       <tr>
+  |         <td colspan="2">{{detail}}</td>
+  |       </tr>
+  |     </table>
+  |   </p>
+  | {{/each}}
+  |</script>
+  script(src='javascripts/index.js')

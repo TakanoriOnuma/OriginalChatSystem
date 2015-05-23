@@ -48,10 +48,21 @@ mongoose.model('Room', roomSchema);
 // /roomにGETアクセスした時、部屋一覧を取得する
 app.get('/room', function(req, res) {
   var Room = mongoose.model('Room');
-  // 全てのroomを取得して送る
-  Room.find({}, function(err, rooms) {
-    res.send(rooms);
-  });
+  var roomId = req.query.roomId;
+  // ルームIDに指定があれば
+  if(roomId) {
+    // ルームIDの情報のみ送る
+    Room.findOne({_id : roomId}, function(err, room) {
+      res.send(room);
+    });
+  }
+  // ルームIDに指定が無ければ
+  else {
+    // 全てのroomを取得して送る
+    Room.find({}, function(err, rooms) {
+      res.send(rooms);
+    });
+  }
 });
 
 // /roomにPOSTアクセスしたとき、部屋を新規登録する

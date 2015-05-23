@@ -17,3 +17,26 @@
 body {
   padding-top: 100px;
 }
+
+#container {
+  border: 1px solid black;
+  width: 1000px;
+  display: -moz-box;
+  display: -webkit-box;
+  display: box;
+}
+
+#chatfield {
+  background-color: lightpink;
+  height: 100px;
+  width: 300px;
+}
+
+#chatboard {
+  background-color: lightblue;
+  -moz-box-flex: 1.0;
+  -webkit-box-flex: 1.0;
+  -box-flex: 1.0;
+  height: 100px;
+  width: 200px;
+}

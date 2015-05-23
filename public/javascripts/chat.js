@@ -17,7 +17,7 @@ function loadTopic() {
 
   $.get('/room', {roomId : ROOMID}, function(room) {
     $topic
-      .append('<p>' + room.title + '</p>')
-      .append('<p>' + room.detail + '</p>');
+      .append(room.title + '<br>')
+      .append(room.detail);
   });
 }

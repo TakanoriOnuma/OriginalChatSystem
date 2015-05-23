@@ -53,7 +53,7 @@ app.get('/room', function(req, res) {
 // /roomにPOSTアクセスしたとき、部屋を新規登録する
 app.post('/room', function(req, res) {
   var title    = req.body.title;
-  var creator  = req.body.name;
+  var creator  = req.body.creator;
   // タイトルと作成者があればMongoDBに保存
   if(title !== '' && creator !== '') {
     var Room = mongoose.model('Room');

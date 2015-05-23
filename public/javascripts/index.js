@@ -13,7 +13,6 @@ function getRoom() {
   // 取得した部屋情報をテンプレートを用いて展開する
   $.get('/room', function(rooms) {
     var compiledHtml = template(rooms);
-    console.log(compiledHtml);
     $roomList.html(compiledHtml);
   });
 }

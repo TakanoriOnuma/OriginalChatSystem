@@ -7,8 +7,20 @@ block content
   p#topic
     test
   div#container
+    // チャットするフィールド
     div#chatfield
       span チャットフィールド
+      p.chatlist
+      // Chat入力フォームを作成する
+      form#fm
+        label(for='name') 名前：
+        input#name(type='text', name='name')
+        br
+        label(for='text') 内容：
+        input#text(type='text', name='text')
+        br
+        input(type='submit', value='投稿する')
+    // チャットの移動やまとめるフィールド
     div#chatboard
       span チャットボード
 

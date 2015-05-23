@@ -10,9 +10,6 @@ var moment = require('moment');
 
 mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/chat');
 
-var routes = require('./routes/index');
-var roomCreation = require('./routes/roomCreation');
-
 var app = express();
 
 // view engine setup
@@ -27,8 +24,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 各ページの読み込み
+var routes = require('./routes/index');
+var roomCreation = require('./routes/roomCreation');
+var chat = require('./routes/chat');
+
+// ルートの指定
 app.use('/', routes);
 app.use('/room-creation', roomCreation);
+app.use('/chat', chat);
 
 var Schema = mongoose.Schema;
 // roomスキーマの定義

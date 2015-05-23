@@ -9,6 +9,11 @@
   padding: 10px;
 }
 
+#topic h2 {
+  margin: 0;
+  color: blue;
+}
+
 body {
   padding-top: 100px;
 }

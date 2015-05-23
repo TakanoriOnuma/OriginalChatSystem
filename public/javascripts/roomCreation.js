@@ -49,23 +49,22 @@ function createRoom() {
     detail   : detail,
     password : ''       // とりあえずパスワードは空文字
   };
-  var roomId = '';
   $.post('/room', sendObj, function(res) {
-    roomId = res;
-    // ※ 非同期のせいでこの処理はほぼ無駄（混乱を招く可能性あり） ※ //
+    var roomId = res;
+    // 登録に失敗したら
     if(roomId === null) {
-      // 登録失敗のメッセージを送る
-      $info.children().remove();
+      // 再度入力可能にして登録失敗のメッセージを送る
+      $('#fm input, textarea').removeAttr('disabled');
       $info.append($('<li>').addClass('error').append('DBの登録に失敗しました。'));
       return;
     }
-    console.log('roomId1:' + roomId);
-  });
-  console.log('roomId2:' + roomId);
+    $('#btn').val('部屋の作成完了');
+    $info.append($('<li>').addClass('info').append('部屋の登録が完了しました。'));
 
+    // 部屋へのリンクを表示する
+    $link = $('#link');
+    $link.append($('<a>').attr('href', './chat?room=' + roomId).append('部屋へ移動する'));
+  });
   // 入力を禁止にする
   $('#fm input, textarea').attr('disabled', true);
-  $('#btn').val('部屋の作成完了');
-
-  $info.append($('<li>').addClass('info').append('部屋の登録が完了しました。'));
 }

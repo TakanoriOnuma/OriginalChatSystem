@@ -26,4 +26,21 @@ block content
       span チャットボード
 
 block scripts
+  // チャットのテンプレート
+  <script type='text/x-handlebars-template' id='chat-template'>
+  | {{#each this}}
+  |   <div>
+  |     <table>
+  |       <tr>
+  |         <td>{{name}}</td>
+  |         <td>{{dateToStr created}}</td>
+  |       </tr>
+  |       <tr>
+  |         <td>{{text}}</td>
+  |         <td>button</td>
+  |       </tr>
+  |     </table>
+  |   </div>
+  | {{/each}}
+  |</script>
   script(src='javascripts/chat.js')

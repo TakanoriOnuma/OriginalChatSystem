@@ -1,3 +1,4 @@
+// URLの?以降に書かれているパラメータを取得する
 function getParams() {
   var url    = location.href;
   parameters = url.split("?");
@@ -9,4 +10,19 @@ function getParams() {
     paramsArray[neet[0]] = neet[1];
   }
   return paramsArray;
+}
+
+// 日付を文字列にして返す
+function dateToStr(date) {
+  // 文字列で書かれた日付なら、Dateオブジェクトに変換する
+  if(typeof date === 'string') {
+    date = new Date(date);
+  }
+  var str = date.getFullYear() + '/';
+  str += date.getMonth() + '/';
+  str += date.getDate() + ' ';
+  str += ('00' + date.getHours()).substr(-2) + ':';
+  str += ('00' + date.getMinutes()).substr(-2);
+
+  return str;
 }

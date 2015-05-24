@@ -1,10 +1,9 @@
 var SOCKET = io();  // web socket
 var ROOMID;         // 部屋のID
+var CHATTEMP;       // チャットのテンプレート
 
 $(function() {
-  loadParams();
-  loadTopic();
-  loadChat();
+  init();
 
   $('#fm').submit(function() {
     postChat();
@@ -12,11 +11,29 @@ $(function() {
   });
 });
 
+// 初期化処理
+function init() {
+  loadParams();
+  loadTemplates();
+  loadTopic();
+  loadChat();
+}
+
 // URLにあるパラメータの読み込み
 // 読み込み内容は全てグローバル参照が出来る
 function loadParams() {
   var params = getParams();
   ROOMID = params['room'];
+}
+
+// テンプレートの読み込み
+function loadTemplates() {
+  // テンプレートで用いるヘルパー関数の登録
+  Handlebars.registerHelper('dateToStr', dateToStr);
+
+  // チャットテンプレートの読み込み
+  var source = $('#chat-template').html();
+  CHATTEMP = Handlebars.compile(source);
 }
 
 // 部屋のタイトルと詳細情報を読み込んで表示
@@ -32,11 +49,12 @@ function loadTopic() {
 
 // チャット情報を取得して表示
 function loadChat() {
+  // 出力先を指定
   var $chatlist = $('.chatlist');
+
   $.get('/chatmsgs', {roomId : ROOMID}, function(chats) {
-    $.each(chats, function(index, chat) {
-      $chatlist.append('<div>' + chat.name + '<br>' + chat.text + '</div>');
-    });
+    var compiledHtml = CHATTEMP(chats);
+    $chatlist.html(compiledHtml);
   });
 }
 
@@ -93,5 +111,6 @@ SOCKET.on('chat', function(chat) {
     return;
   }
   var $chatlist = $('.chatlist');
-  $chatlist.append('<div>' + chat.name + '<br>' + chat.text + '</div>');
+  var compiledHtml = CHATTEMP([chat]);
+  $chatlist.append(compiledHtml);
 });

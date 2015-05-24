@@ -4,11 +4,6 @@ var CHATTEMP;       // チャットのテンプレート
 
 $(function() {
   init();
-
-  $('#fm').submit(function() {
-    postChat();
-    return false;
-  });
 });
 
 // 初期化処理
@@ -17,6 +12,7 @@ function init() {
   loadTemplates();
   loadTopic();
   loadChat();
+  setHandlers();
 }
 
 // URLにあるパラメータの読み込み
@@ -30,6 +26,9 @@ function loadParams() {
 function loadTemplates() {
   // テンプレートで用いるヘルパー関数の登録
   Handlebars.registerHelper('dateToStr', dateToStr);
+  Handlebars.registerHelper('getONOFF', function(isVisible) {
+    return isVisible ? 'ON' : 'OFF';
+  });
 
   // チャットテンプレートの読み込み
   var source = $('#chat-template').html();
@@ -55,6 +54,19 @@ function loadChat() {
   $.get('/chatmsgs', {roomId : ROOMID}, function(chats) {
     var compiledHtml = CHATTEMP(chats);
     $chatlist.html(compiledHtml);
+  });
+}
+
+// イベント群をセットする
+function setHandlers() {
+  // フォームからチャットの送信が来たら
+  $('#fm').submit(function() {
+    postChat();
+    return false;
+  });
+
+  $(document).on('click', '.chatlist input', function() {
+    $(this).attr('value', 'ON');
   });
 }
 

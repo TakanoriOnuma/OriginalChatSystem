@@ -22,13 +22,16 @@ function loadParams() {
   ROOMID = params['room'];
 }
 
+// booleanから'ON'／'OFF'の文字列を返す
+function getONOFF(isVisible) {
+  return isVisible ? 'ON' : 'OFF';
+}
+
 // テンプレートの読み込み
 function loadTemplates() {
   // テンプレートで用いるヘルパー関数の登録
   Handlebars.registerHelper('dateToStr', dateToStr);
-  Handlebars.registerHelper('getONOFF', function(isVisible) {
-    return isVisible ? 'ON' : 'OFF';
-  });
+  Handlebars.registerHelper('getONOFF', getONOFF);
 
   // チャットテンプレートの読み込み
   var source = $('#chat-template').html();
@@ -65,8 +68,10 @@ function setHandlers() {
     return false;
   });
 
+  // チャットフィールドにあるチャットのボタンをクリックしたらチャットボードの表示のON／OFFを切り替えられる
   $(document).on('click', '.chatlist input', function() {
-    $(this).attr('value', 'ON');
+    var key = $(this).attr('key');
+    SOCKET.emit('toggleChat', key);
   });
 }
 
@@ -125,4 +130,10 @@ SOCKET.on('chat', function(chat) {
   var $chatlist = $('.chatlist');
   var compiledHtml = CHATTEMP([chat]);
   $chatlist.append(compiledHtml);
+});
+
+// toggleChatというイベントを受信したら指定されたチャットの表示ON／OFFを切り替える
+SOCKET.on('toggleChat', function(chat) {
+  var $button = $('.chatlist input[key=' + chat._id + ']');
+  $button.attr('value', getONOFF(chat.isVisible));
 });

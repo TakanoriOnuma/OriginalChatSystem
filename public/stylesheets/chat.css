@@ -1,0 +1,60 @@
+#topic {
+  background-color: white;
+  position: fixed;
+  top: 40px;
+  left: 0;
+  width: 100%;
+  border-width: 1px;
+  border-style: solid;
+  margin: 0;
+  padding: 10px;
+}
+
+#topic h2 {
+  margin: 0;
+  color: blue;
+}
+
+body {
+  padding-top: 100px;
+}
+
+#container {
+  border: 1px solid black;
+  width: 1000px;
+  display: -moz-box;
+  display: -webkit-box;
+  display: box;
+}
+
+#chatfield {
+  background-color: lightpink;
+  padding: 10px;
+  width: 300px;
+}
+
+#chatboard {
+  background-color: lightblue;
+  padding: 10px;
+  -moz-box-flex: 1.0;
+  -webkit-box-flex: 1.0;
+  -box-flex: 1.0;
+  width: 200px;
+}
+
+.chatlist div {
+  border: 1px solid black;
+}
+
+.chatlist table {
+  width: 100%;
+}
+
+.chatlist div table td:nth-child(2n+1) {
+  width: 60%;
+}
+
+.chatlist div table td:nth-child(2n) {
+  width: 40%;
+  text-align: right;
+}

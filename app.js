@@ -10,9 +10,6 @@ var moment = require('moment');
 
 mongoose.connect(process.env.MONGOLAB_URI || 'mongodb://localhost/chat');
 
-var routes = require('./routes/index');
-var roomCreation = require('./routes/roomCreation');
-
 var app = express();
 
 // view engine setup
@@ -27,8 +24,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 各ページの読み込み
+var routes = require('./routes/index');
+var roomCreation = require('./routes/roomCreation');
+var chat = require('./routes/chat');
+
+// ルートの指定
 app.use('/', routes);
 app.use('/room-creation', roomCreation);
+app.use('/chat', chat);
 
 var Schema = mongoose.Schema;
 // roomスキーマの定義
@@ -41,13 +45,35 @@ var roomSchema = new Schema({
 });
 mongoose.model('Room', roomSchema);
 
+// chatスキーマの定義
+var chatSchema = new Schema({
+  roomId    : String,
+  name      : String,
+  text      : String,
+  created   : { type: Date, default: Date.now },
+  isVisible : { type: Boolean, default: false },
+  position  : { type: Object, default: {x: 0, y: 0} }
+});
+mongoose.model('Chat', chatSchema);
+
 // /roomにGETアクセスした時、部屋一覧を取得する
 app.get('/room', function(req, res) {
   var Room = mongoose.model('Room');
-  // 全てのroomを取得して送る
-  Room.find({}, function(err, rooms) {
-    res.send(rooms);
-  });
+  var roomId = req.query.roomId;
+  // ルームIDに指定があれば
+  if(roomId) {
+    // ルームIDの情報のみ送る
+    Room.findOne({_id : roomId}, function(err, room) {
+      res.send(room);
+    });
+  }
+  // ルームIDに指定が無ければ
+  else {
+    // 全てのroomを取得して送る
+    Room.find({}, function(err, rooms) {
+      res.send(rooms);
+    });
+  }
 });
 
 // /roomにPOSTアクセスしたとき、部屋を新規登録する
@@ -75,6 +101,15 @@ app.post('/room', function(req, res) {
   else {
     res.send(null);
   }
+});
+
+// /chatmsgsにGETアクセスしたとき、指定したルームIDにあるチャット情報を全て取得する
+app.get('/chatmsgs', function(req, res) {
+  var roomId = req.query.roomId;
+  var Chat = mongoose.model('Chat');
+  Chat.find({roomId : roomId}, function(err, chats) {
+    res.send(chats);
+  });
 });
 
 

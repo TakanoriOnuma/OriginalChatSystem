@@ -100,20 +100,30 @@ function setHandlers() {
   // ラベルの移動処理
   var pos = {x: 0, y: 0};
   var $moveLabel = null;
+  var $chatboard = $('#chatboard');
   $(document)
+    // マウスダウン時に移動対象を取得する
     .on('mousedown', '.label', function(e) {
       $moveLabel = $(this);
       pos.x = e.pageX - $(this).position().left;
       pos.y = e.pageY - $(this).position().top;
     })
+    // マウスアップ時に移動対象を外す
     .on('mouseup', '.label, body', function(e) {
       $moveLabel = null;
     })
+    // マウス移動時に移動対象があれば移動する
     .on('mousemove', '.label, body', function(e) {
       if($moveLabel !== null) {
-        $moveLabel.css({
-          left : e.pageX - pos.x,
-          top  : e.pageY - pos.y
+        // $moveLabel.css({
+        //   left : e.pageX - pos.x,
+        //   top  : e.pageY - pos.y
+        // });
+        // 移動情報をサーバーに送る
+        SOCKET.emit('moveLabel', {
+          x : e.pageX - pos.x - $chatboard.position().left,
+          y : e.pageY - pos.y - $chatboard.position().top,
+          chatId : $moveLabel.attr('key')
         });
       }
     });
@@ -191,4 +201,14 @@ SOCKET.on('toggleChat', function(chat) {
   else {
     $label.hide(100);
   }
+});
+
+// moveLabelというイベントを受信したら指定されたラベルの座標を移動する
+SOCKET.on('moveLabel', function(label) {
+  var pos = $('#chatboard').position();
+  var $moveLabel = $('.label[key=' + label.chatId + ']');
+  $moveLabel.css({
+    left : label.x + pos.left,
+    top  : label.y + pos.top
+  });
 });

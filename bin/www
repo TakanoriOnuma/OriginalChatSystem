@@ -125,6 +125,16 @@ io.sockets.on('connection', function(socket) {
     });
   });
 
+  // moveLabelというイベントを受信した時、指定したラベルを移動する
+  socket.on('moveLabel', function(label) {
+    var Chat = mongoose.model('Chat');
+    Chat.findOne({_id : label.chatId}, function(err, chat) {
+      chat.position = {x : label.x, y : label.y};
+      chat.save();
+      io.emit('moveLabel', label);
+    });
+  });
+
   // 接続が切断した時
   socket.on('disconnect', function() {
     console.log('disconnect');

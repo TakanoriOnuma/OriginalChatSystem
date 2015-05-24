@@ -40,3 +40,7 @@ body {
   -box-flex: 1.0;
   width: 200px;
 }
+
+.chatlist div {
+  border: 1px solid black;
+}

@@ -45,6 +45,17 @@ var roomSchema = new Schema({
 });
 mongoose.model('Room', roomSchema);
 
+// chatスキーマの定義
+var chatSchema = new Schema({
+  roomId    : String,
+  name      : String,
+  text      : String,
+  created   : { type: Date, default: Date.now },
+  isVisible : { type: Boolean, default: false },
+  position  : { type: Array, default: {x: 0, y: 0} }
+});
+mongoose.model('Chat', chatSchema);
+
 // /roomにGETアクセスした時、部屋一覧を取得する
 app.get('/room', function(req, res) {
   var Room = mongoose.model('Room');
@@ -90,6 +101,15 @@ app.post('/room', function(req, res) {
   else {
     res.send(null);
   }
+});
+
+// /chatmsgsにGETアクセスしたとき、指定したルームIDにあるチャット情報を全て取得する
+app.get('/chatmsgs', function(req, res) {
+  var roomId = req.query.roomId;
+  var Chat = mongoose.model('Chat');
+  Chat.find({roomId : roomId}, function(err, chats) {
+    res.send(chats);
+  });
 });
 
 

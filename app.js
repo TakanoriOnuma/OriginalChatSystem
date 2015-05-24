@@ -52,7 +52,7 @@ var chatSchema = new Schema({
   text      : String,
   created   : { type: Date, default: Date.now },
   isVisible : { type: Boolean, default: false },
-  position  : { type: Array, default: {x: 0, y: 0} }
+  position  : { type: Object, default: {x: 0, y: 0} }
 });
 mongoose.model('Chat', chatSchema);
 

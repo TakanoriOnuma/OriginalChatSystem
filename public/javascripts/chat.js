@@ -53,11 +53,34 @@ function loadTopic() {
 function loadChat() {
   // 出力先を指定
   var $chatlist = $('.chatlist');
+  var $chatboard = $('#chatboard');
 
   $.get('/chatmsgs', {roomId : ROOMID}, function(chats) {
     var compiledHtml = CHATTEMP(chats);
     $chatlist.html(compiledHtml);
+
+    // チャットボードにも登録
+    $.each(chats, function(index, chat) {
+      setLabel($chatboard, chat);
+    });
   });
+}
+
+// チャット情報からチャットボードにラベルをセットする
+function setLabel($chatboard, chat) {
+  var pos = $chatboard.position();
+  var $label = $('<div>').addClass('label').append(chat.text);
+  $label
+    .show()
+    .attr('key', chat._id)
+    .css({
+      top:  chat.position.y + pos.top,
+      left: chat.position.x + pos.left
+    });
+  if(!chat.isVisible) {
+    $label.hide();
+  }
+  $chatboard.append($label);
 }
 
 // イベント群をセットする
@@ -130,10 +153,21 @@ SOCKET.on('chat', function(chat) {
   var $chatlist = $('.chatlist');
   var compiledHtml = CHATTEMP([chat]);
   $chatlist.append(compiledHtml);
+
+  var $chatboard = $('#chatboard');
+  setLabel($chatboard, chat);
 });
 
-// toggleChatというイベントを受信したら指定されたチャットの表示ON／OFFを切り替える
+// toggleChatというイベントを受信したら指定されたラベルの表示ON／OFFを切り替える
 SOCKET.on('toggleChat', function(chat) {
   var $button = $('.chatlist input[key=' + chat._id + ']');
   $button.attr('value', getONOFF(chat.isVisible));
+
+  var $label = $('.label[key=' + chat._id + ']');
+  if(chat.isVisible) {
+    $label.show(100);
+  }
+  else {
+    $label.hide(100);
+  }
 });

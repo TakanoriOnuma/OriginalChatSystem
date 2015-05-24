@@ -58,3 +58,9 @@ body {
   width: 40%;
   text-align: right;
 }
+
+.label {
+  border: 1px solid black;
+  background-color: white;
+  position: absolute;
+}

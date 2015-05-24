@@ -45,3 +45,16 @@ body {
 .chatlist div {
   border: 1px solid black;
 }
+
+.chatlist table {
+  width: 100%;
+}
+
+.chatlist div table td:nth-child(2n+1) {
+  width: 60%;
+}
+
+.chatlist div table td:nth-child(2n) {
+  width: 40%;
+  text-align: right;
+}

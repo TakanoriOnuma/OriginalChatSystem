@@ -96,6 +96,27 @@ function setHandlers() {
     var key = $(this).attr('key');
     SOCKET.emit('toggleChat', key);
   });
+
+  // ラベルの移動処理
+  var pos = {x: 0, y: 0};
+  var $moveLabel = null;
+  $(document)
+    .on('mousedown', '.label', function(e) {
+      $moveLabel = $(this);
+      pos.x = e.pageX - $(this).position().left;
+      pos.y = e.pageY - $(this).position().top;
+    })
+    .on('mouseup', '.label, body', function(e) {
+      $moveLabel = null;
+    })
+    .on('mousemove', '.label, body', function(e) {
+      if($moveLabel !== null) {
+        $moveLabel.css({
+          left : e.pageX - pos.x,
+          top  : e.pageY - pos.y
+        });
+      }
+    });
 }
 
 // チャット内容を送信する

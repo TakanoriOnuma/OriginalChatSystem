@@ -131,7 +131,7 @@ io.sockets.on('connection', function(socket) {
     Chat.findOne({_id : label.chatId}, function(err, chat) {
       chat.position = {x : label.x, y : label.y};
       chat.save();
-      io.emit('moveLabel', label);
+      socket.broadcast.emit('moveLabel', label);
     });
   });
 

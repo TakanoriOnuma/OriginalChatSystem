@@ -115,16 +115,17 @@ function setHandlers() {
     // マウス移動時に移動対象があれば移動する
     .on('mousemove', '.label, body', function(e) {
       if($moveLabel !== null) {
-        // $moveLabel.css({
-        //   left : e.pageX - pos.x,
-        //   top  : e.pageY - pos.y
-        // });
+        $moveLabel.css({
+          left : e.pageX - pos.x,
+          top  : e.pageY - pos.y
+        });
         // 移動情報をサーバーに送る
         SOCKET.emit('moveLabel', {
           x : e.pageX - pos.x - $chatboard.position().left,
           y : e.pageY - pos.y - $chatboard.position().top,
           chatId : $moveLabel.attr('key')
         });
+        e.stopPropagation();
       }
     });
 }

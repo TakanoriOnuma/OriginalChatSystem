@@ -64,4 +64,11 @@ body {
   background-color: white;
   position: absolute;
   width: 200px;
+  cursor: default;
+}
+
+.noneselect {
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
 }

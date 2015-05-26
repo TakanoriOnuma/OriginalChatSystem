@@ -73,6 +73,10 @@ body {
   -webkit-user-select: none;
 }
 
+.groupselect {
+  background-color: lightblue;
+}
+
 .dragfield {
   border: 1px solid blue;
   position: absolute;

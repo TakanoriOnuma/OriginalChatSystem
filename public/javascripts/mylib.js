@@ -26,3 +26,11 @@ function dateToStr(date) {
 
   return str;
 }
+
+// box内にelemがあるかチェック
+function isBoxing($elem, $box) {
+  return ($elem.position().left > $box.position().left
+    && $elem.position().left + $elem.outerWidth() < $box.position().left + $box.outerWidth()
+    && $elem.position().top > $box.position().top
+    && $elem.position().top + $elem.outerHeight() < $box.position().top + $box.outerHeight());
+}

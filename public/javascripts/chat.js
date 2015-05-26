@@ -171,9 +171,10 @@ function setHandlers() {
 
       // ドラッグ中は文字の選択を無効にする
       $('body').addClass('noneselect');
-      // ラベルの選択を消しておく
-      // グルーピングするためにラベルを選択しているからすぐ外さなくていいかもしれない
-      // $('.label:visible').removeClass('groupselect');
+      // 右クリックの時以外ラベルの選択を消しておく
+      if(e.which !== 3) {
+        $('.label:visible').removeClass('groupselect');
+      }
     })
     // マウスアップ時はドラッグ表示タグをnullにしておく
     .mouseup(function(e) {

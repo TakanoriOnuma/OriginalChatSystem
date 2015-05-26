@@ -152,15 +152,17 @@ function setHandlers() {
 
   // ドラッグの範囲を表示する
   var $dragfield = null;
+  var startPt = null;
   $('#chatboard')
     // マウスダウン時に範囲の開始位置を指定する
     .mousedown(function(e) {
+      startPt = {x : e.pageX, y : e.pageY};
       // ドラッグ範囲を表示するタグを取得する
       $dragfield = $('.dragfield');
       $dragfield
         .css({
-          left: e.pageX,
-          top:  e.pageY
+          left: startPt.x,
+          top:  startPt.y
         })
         .height(0)
         .width(0)
@@ -185,9 +187,24 @@ function setHandlers() {
       // ドラッグ範囲を表示するタグがあるなら処理する
       if($dragfield !== null) {
         var pos = $dragfield.position();
+        var width  = e.pageX - startPt.x;
+        var height = e.pageY - startPt.y;
+        // 幅や高さがマイナスになったら左上の座標をその分動かす
+        if(width < 0) {
+          pos.left = startPt.x + width;
+          width *= -1;
+        }
+        if(height < 0) {
+          pos.top = startPt.y + height;
+          height *= -1;
+        }
         $dragfield
-          .width(e.pageX - pos.left)
-          .height(e.pageY - pos.top);
+          .css({
+            left : pos.left,
+            top  : pos.top
+          })
+          .width(width)
+          .height(height);
       }
     });
 }

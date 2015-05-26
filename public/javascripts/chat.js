@@ -107,10 +107,12 @@ function setHandlers() {
       $moveLabel = $(this);
       pos.x = e.pageX - $(this).position().left;
       pos.y = e.pageY - $(this).position().top;
+      $('body').addClass('noneselect');
     })
     // マウスアップ時に移動対象を外す
     .on('mouseup', '.label, body', function(e) {
       $moveLabel = null;
+      $('body').removeClass('noneselect');
     })
     // マウス移動時に移動対象があれば移動する
     .on('mousemove', '.label, body', function(e) {

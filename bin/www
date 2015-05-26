@@ -135,6 +135,19 @@ io.sockets.on('connection', function(socket) {
     });
   });
 
+  // groupingというイベントを受信した時、送られたid群を全てまとめる
+  socket.on('grouping', function(groupobj) {
+    var GroupBox = mongoose.model('groupBox');
+    var groupBox = new GroupBox();
+    groupBox.roomId = groupobj.roomId;
+    groupBox.title = 'グループ';
+    groupBox.position = {x : 0, y : 0};
+    groupBox.childs = groupobj.groupkeys;
+    groupBox.save();
+
+
+  });
+
   // 接続が切断した時
   socket.on('disconnect', function() {
     console.log('disconnect');

@@ -109,3 +109,19 @@ body {
   background: #666;
   color: #fff;
 }
+
+.groupbox {
+  border: 1px solid black;
+  background-color: white;
+  position: absolute;
+  width: 200px;
+  padding: 0;
+  margin: 0;
+  cursor: default;
+}
+
+.groupbox ul {
+  padding: 0;
+  margin: 0;
+  margin-left: 1.5em;
+}

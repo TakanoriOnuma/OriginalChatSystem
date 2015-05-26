@@ -12,6 +12,31 @@ function getParams() {
   return paramsArray;
 }
 
+// Arrayにfind関数が無い場合に定義しておく
+if (!Array.prototype.find) {
+  Array.prototype.find = function(predicate) {
+    if (this === null) {
+      throw new TypeError('Array.prototype.find called on null or undefined');
+    }
+    if (typeof predicate !== 'function') {
+      throw new TypeError('predicate must be a function');
+    }
+    var list = Object(this);
+    var length = list.length >>> 0;
+    var thisArg = arguments[1];
+    var value;
+
+    for (var i = 0; i < length; i++) {
+      value = list[i];
+      if (predicate.call(thisArg, value, i, list)) {
+        return value;
+      }
+    }
+    return undefined;
+  };
+}
+
+
 // 日付を文字列にして返す
 function dateToStr(date) {
   // 文字列で書かれた日付なら、Dateオブジェクトに変換する

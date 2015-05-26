@@ -60,11 +60,34 @@ function loadChat() {
     var compiledHtml = CHATTEMP(chats);
     $chatlist.html(compiledHtml);
 
+    // グループボックスの表示
+    $.get('/groupboxes', {roomId : ROOMID}, function(groupboxes) {
+      $.each(groupboxes, function(index, groupbox) {
+        setGroupBox($chatboard, groupbox, chats);
+      });
+    });
+
     // チャットボードにも登録
     $.each(chats, function(index, chat) {
       setLabel($chatboard, chat);
     });
   });
+}
+
+// グループボックスをチャットボードに表示する
+function setGroupBox($chatboard, groupbox, chats) {
+  var pos = $chatboard.position();
+  var $groupbox = $('<div>').addClass('groupbox');
+  $groupbox.append($('<div>').append(groupbox.title));
+  var $ul = $('<ul>');
+  $.each(groupbox.childs, function(index, child) {
+    var chat = chats.find(function(elem, index, array) {
+      return (elem._id === child);
+    });
+    $ul.append($('<li>').append(chat.text));
+  });
+  $groupbox.append($ul);
+  $chatboard.append($groupbox);
 }
 
 // チャット情報からチャットボードにラベルをセットする
@@ -232,7 +255,15 @@ function setContextMenu() {
   });
   $chatboardmenu = $('#chatboardmenu');
   $('li.grouping', $chatboardmenu).click(function() {
-    alert('grouping');
+    var groupkeys = new Array();
+    $('.groupselect').each(function(index, label) {
+      groupkeys.push($(label).attr('key'));
+    });
+    alert(groupkeys);
+    SOCKET.emit('grouping', {
+      roomId : ROOMID,
+      groupkeys : groupkeys
+    });
   });
   $('li.ungrouping', $chatboardmenu).click(function() {
     alert('ungrouping');

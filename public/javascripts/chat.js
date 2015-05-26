@@ -13,6 +13,7 @@ function init() {
   loadTopic();
   loadChat();
   setHandlers();
+  setContextMenu();
 }
 
 // URLにあるパラメータの読み込み
@@ -220,6 +221,21 @@ function setHandlers() {
         });
       }
     });
+}
+
+// コンテキストメニューをセットする
+function setContextMenu() {
+  $('#chatboard').showMenu({
+    opacity : 0.8,
+    query : '#chatboardmenu'
+  });
+  $chatboardmenu = $('#chatboardmenu');
+  $('li.grouping', $chatboardmenu).click(function() {
+    alert('grouping');
+  });
+  $('li.ungrouping', $chatboardmenu).click(function() {
+    alert('ungrouping');
+  });
 }
 
 // チャット内容を送信する

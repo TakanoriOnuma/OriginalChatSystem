@@ -76,4 +76,5 @@ body {
 .dragfield {
   border: 1px solid blue;
   position: absolute;
+  display: none;
 }

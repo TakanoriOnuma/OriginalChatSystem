@@ -108,7 +108,11 @@ function setHandlers() {
       pos.x = e.pageX - $(this).position().left;
       pos.y = e.pageY - $(this).position().top;
       $('body').addClass('noneselect');
-      console.log('label mousedown');
+      // イベントがchatboardのほうが早いため、処理をしていたら取り消す
+      if($dragfield !== null) {
+        $dragfield.hide();
+        $dragfield = null;
+      }
     })
     // マウスアップ時に移動対象を外す
     .on('mouseup', '.label, body', function(e) {
@@ -159,21 +163,27 @@ function setHandlers() {
           top:  e.pageY
         })
         .height(0)
-        .width(0);
+        .width(0)
+        .show();
 
       // ドラッグ中は文字の選択を無効にする
       $('body').addClass('noneselect');
-      console.log('chatboard mousedown');
     })
     // マウスアップ時はドラッグ表示タグをnullにしておく
     .mouseup(function(e) {
-      $dragfield = null;
-      $('body').removeClass('noneselect');
+      // ドラッグを表示するタグがあるなら処理する
+      if($dragfield !== null) {
+        if($dragfield.width() === 0 || $dragfield.height() === 0) {
+          $dragfield.hide();
+        }
+        $dragfield = null;
+        $('body').removeClass('noneselect');
+      }
     })
     // マウスが移動時にドラッグの範囲を変更する
     .mousemove(function(e) {
-      // ドラッグ範囲を表示するタグがあり、かつラベルを移動するので無ければ処理する
-      if($dragfield !== null && $moveLabel === null) {
+      // ドラッグ範囲を表示するタグがあるなら処理する
+      if($dragfield !== null) {
         var pos = $dragfield.position();
         $dragfield
           .width(e.pageX - pos.left)

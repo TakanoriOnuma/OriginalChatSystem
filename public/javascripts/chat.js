@@ -108,6 +108,7 @@ function setHandlers() {
       pos.x = e.pageX - $(this).position().left;
       pos.y = e.pageY - $(this).position().top;
       $('body').addClass('noneselect');
+      console.log('label mousedown');
     })
     // マウスアップ時に移動対象を外す
     .on('mouseup', '.label, body', function(e) {
@@ -142,6 +143,41 @@ function setHandlers() {
           chatId : $moveLabel.attr('key')
         });
         e.stopPropagation();
+      }
+    });
+
+  // ドラッグの範囲を表示する
+  var $dragfield = null;
+  $('#chatboard')
+    // マウスダウン時に範囲の開始位置を指定する
+    .mousedown(function(e) {
+      // ドラッグ範囲を表示するタグを取得する
+      $dragfield = $('.dragfield');
+      $dragfield
+        .css({
+          left: e.pageX,
+          top:  e.pageY
+        })
+        .height(0)
+        .width(0);
+
+      // ドラッグ中は文字の選択を無効にする
+      $('body').addClass('noneselect');
+      console.log('chatboard mousedown');
+    })
+    // マウスアップ時はドラッグ表示タグをnullにしておく
+    .mouseup(function(e) {
+      $dragfield = null;
+      $('body').removeClass('noneselect');
+    })
+    // マウスが移動時にドラッグの範囲を変更する
+    .mousemove(function(e) {
+      // ドラッグ範囲を表示するタグがあり、かつラベルを移動するので無ければ処理する
+      if($dragfield !== null && $moveLabel === null) {
+        var pos = $dragfield.position();
+        $dragfield
+          .width(e.pageX - pos.left)
+          .height(e.pageY - pos.top);
       }
     });
 }

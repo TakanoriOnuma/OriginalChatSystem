@@ -115,14 +115,28 @@ function setHandlers() {
     // マウス移動時に移動対象があれば移動する
     .on('mousemove', '.label, body', function(e) {
       if($moveLabel !== null) {
+        var newPos = { x : e.pageX - pos.x, y : e.pageY - pos.y };
+        var boardPos = $chatboard.position();
+        // チャットボードの左と上の枠を超えないように座標を調節する
+        newPos.x = (newPos.x < boardPos.left) ? boardPos.left : newPos.x;
+        newPos.y = (newPos.y < boardPos.top)  ? boardPos.top  : newPos.y;
+
+        // チャットボードの右と下の枠は超えそうなら大きくして調節する（今は取りあえず超えないようにする）
+        if(newPos.x + $moveLabel.outerWidth() > boardPos.left + $chatboard.outerWidth()) {
+          newPos.x = boardPos.left + $chatboard.outerWidth() - $moveLabel.outerWidth();
+        }
+        if(newPos.y + $moveLabel.outerHeight() > boardPos.top + $chatboard.outerHeight()) {
+          newPos.y = boardPos.top + $chatboard.outerHeight() - $moveLabel.outerHeight();
+        }
+
         $moveLabel.css({
-          left : e.pageX - pos.x,
-          top  : e.pageY - pos.y
+          left : newPos.x,
+          top  : newPos.y
         });
         // 移動情報をサーバーに送る
         SOCKET.emit('moveLabel', {
-          x : e.pageX - pos.x - $chatboard.position().left,
-          y : e.pageY - pos.y - $chatboard.position().top,
+          x : newPos.x - $chatboard.position().left,
+          y : newPos.y - $chatboard.position().top,
           chatId : $moveLabel.attr('key')
         });
         e.stopPropagation();

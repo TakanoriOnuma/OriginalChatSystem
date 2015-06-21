@@ -122,11 +122,78 @@ io.sockets.on('connection', function(socket) {
 
   // moveLabelというイベントを受信した時、指定したラベルを移動する
   socket.on('moveLabel', function(label) {
-    var Chat = mongoose.model('Chat');
+    var modelName = '';
+    if(label.className === 'label') {
+      modelName = 'Chat';
+    }
+    else {
+      modelName = 'groupBox';
+    }
+    var Chat = mongoose.model(modelName);
     Chat.findOne({_id : label.chatId}, function(err, chat) {
       chat.position = {x : label.x, y : label.y};
       chat.save();
       socket.broadcast.emit('moveLabel', label);
+    });
+  });
+
+  // groupingというイベントを受信した時、送られたid群を全てまとめる
+  socket.on('grouping', function(groupobj) {
+    var GroupBox = mongoose.model('groupBox');
+    var groupBox = new GroupBox();
+    groupBox.roomId = groupobj.roomId;
+    groupBox.title = 'グループ';
+    groupBox.position = {x : groupobj.x, y : groupobj.y};
+    groupBox.childs = groupobj.groupkeys;
+    groupBox.save();
+
+    io.emit('grouping', groupBox);
+  });
+
+  // ungroupingというイベントを受信した時、指定されたgroupBoxを削除し、
+  // childsのチャット群を表示させる
+  socket.on('ungrouping', function(ungroupobj) {
+    var GroupBox = mongoose.model('groupBox');
+    GroupBox.findOne({_id : ungroupobj.groupBoxId}, function(err, groupBox) {
+      var childs = groupBox.childs;
+      var pos = groupBox.position;
+      var Chat = mongoose.model('Chat');
+      Chat.find({ _id : { $in: childs } }, function(err, chats) {
+        io.emit('ungrouping', {
+          roomId : chats[0].roomId,
+          ungroupBoxId : ungroupobj.groupBoxId,
+          chats : chats
+        });
+      });
+      GroupBox.remove({_id : ungroupobj.groupBoxId}, function(err) { });
+    });
+  });
+
+  // toggleAccordionPanelというイベントを受信した時、
+  // 指定されたgroupBoxの開閉状態をトグルする
+  socket.on('toggleAccordionPanel', function(toggleBox) {
+    var GroupBox = mongoose.model('groupBox');
+    GroupBox.findOne({_id : toggleBox.groupBoxId}, function(err, groupBox) {
+      groupBox.isExpand = !groupBox.isExpand;
+      groupBox.save();
+
+      socket.broadcast.emit('toggleAccordionPanel', {
+        roomId : groupBox.roomId,
+        groupBoxId : toggleBox.groupBoxId
+      });
+    });
+  });
+
+  // changeGroupTitleというイベントを受信した時、
+  // 指定されたgroupBoxのタイトルを変更する
+  socket.on('changeGroupTitle', function(changeBox) {
+    var GroupBox = mongoose.model('groupBox');
+    GroupBox.findOne({_id : changeBox.groupBoxId}, function(err, groupBox) {
+      groupBox.title = changeBox.title;
+      groupBox.save();
+
+      changeBox.roomId = groupBox.roomId;
+      socket.broadcast.emit('changeGroupTitle', changeBox);
     });
   });
 });

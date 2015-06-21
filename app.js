@@ -56,6 +56,16 @@ var chatSchema = new Schema({
 });
 mongoose.model('Chat', chatSchema);
 
+// groupBoxスキーマの定義
+var groupBoxSchema = new Schema({
+  roomId   : String,
+  title    : String,
+  isExpand : { type: Boolean, default: false },
+  position : Object,
+  childs   : Array
+});
+mongoose.model('groupBox', groupBoxSchema);
+
 // /roomにGETアクセスした時、部屋一覧を取得する
 app.get('/room', function(req, res) {
   var Room = mongoose.model('Room');
@@ -109,6 +119,15 @@ app.get('/chatmsgs', function(req, res) {
   var Chat = mongoose.model('Chat');
   Chat.find({roomId : roomId}, function(err, chats) {
     res.send(chats);
+  });
+});
+
+// /groupboxesにGETアクセスした時、指定したルームIDにあるグループボックスを全て取得する
+app.get('/groupboxes', function(req, res) {
+  var roomId = req.query.roomId;
+  var GroupBox = mongoose.model('groupBox');
+  GroupBox.find({roomId : roomId}, function(err, groupboxes) {
+    res.send(groupboxes);
   });
 });
 

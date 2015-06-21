@@ -280,7 +280,9 @@ function setContextMenu() {
   $('li.grouping', $chatboardmenu).click(function(e) {
     var groupkeys = new Array();
     $('.groupselect').each(function(index, label) {
-      groupkeys.push($(label).attr('key'));
+      if($(label).hasClass('label')) {
+        groupkeys.push($(label).attr('key'));
+      }
     });
     if(groupkeys.length <= 0) {
       alert('選択しているラベルがありません。');

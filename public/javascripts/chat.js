@@ -90,7 +90,7 @@ function setGroupBox($chatboard, groupbox, chats) {
   var $titlebar = $('<div>');
   $titlebar
     .append($('<img>').attr('src', 'images/minus.png'))
-    .append(groupbox.title);
+    .append($('<span>').append(groupbox.title));
   $groupbox
     .append($titlebar)
     .css({
@@ -286,6 +286,20 @@ function setHandlers() {
       SOCKET.emit('toggleAccordionPanel', {
         groupBoxId : $groupbox.attr('key')
       });
+    });
+
+  // グループボックスのタイトルの変更
+  $(document)
+    .on('dblclick', '.groupbox div', function() {
+      var $title = $('span', this);
+      $title.replaceWith($('<input type="text">').val($title.html()));
+    })
+    .on('keypress', '.groupbox input', function(e) {
+      // エンターキーが押されたら
+      if(e.which === 13) {
+        var $title = $(this);
+        $title.replaceWith($('<span>').append($title.val()));
+      }
     });
 }
 

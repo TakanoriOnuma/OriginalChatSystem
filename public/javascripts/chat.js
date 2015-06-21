@@ -64,12 +64,21 @@ function loadChat() {
     $.get('/groupboxes', {roomId : ROOMID}, function(groupboxes) {
       $.each(groupboxes, function(index, groupbox) {
         setGroupBox($chatboard, groupbox, chats);
+        // グループボックスで使用したチャットは配列から取り除く
+        $.each(groupbox.childs, function(index, chatId) {
+          for(var i = 0; i < chats.length; i++) {
+            if(chats[i]._id === chatId) {
+              chats.splice(i, 1);
+              break;
+            }
+          }
+        });
       });
-    });
 
-    // チャットボードにも登録
-    $.each(chats, function(index, chat) {
-      setLabel($chatboard, chat);
+      // チャット情報をチャットボードにも登録
+      $.each(chats, function(index, chat) {
+        setLabel($chatboard, chat);
+      });
     });
   });
 }

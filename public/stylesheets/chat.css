@@ -73,16 +73,11 @@ body {
   -webkit-user-select: none;
 }
 
-.groupselect {
-  background-color: lightblue;
-}
-
 .dragfield {
   border: 1px solid blue;
   position: absolute;
   display: none;
 }
-
 
 #chatboardmenu {
   background: #fff;
@@ -124,4 +119,8 @@ body {
   padding: 0;
   margin: 0;
   margin-left: 1.5em;
+}
+
+.groupselect {
+  background-color: lightblue;
 }

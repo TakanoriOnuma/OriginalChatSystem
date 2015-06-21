@@ -217,7 +217,7 @@ function setHandlers() {
       $('body').addClass('noneselect');
       // 右クリックの時以外ラベルの選択を消しておく
       if(e.which !== 3) {
-        $('.label:visible').removeClass('groupselect');
+        $('.label:visible, .groupbox').removeClass('groupselect');
       }
     })
     // マウスアップ時はドラッグ表示タグをnullにしておく
@@ -255,7 +255,7 @@ function setHandlers() {
           .width(width)
           .height(height);
 
-        $('.label:visible').each(function(index, label) {
+        $('.label:visible, .groupbox').each(function(index, label) {
           var $label = $(label);
           if(isBoxing($label, $dragfield)) {
             $label.addClass('groupselect');
@@ -273,7 +273,7 @@ function setContextMenu() {
   var pos = $('#chatboard').position();
 
   $('#chatboard').showMenu({
-    opacity : 0.8,
+    opacity : 1.0,
     query : '#chatboardmenu'
   });
   $chatboardmenu = $('#chatboardmenu');

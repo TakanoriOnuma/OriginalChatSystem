@@ -155,6 +155,25 @@ io.sockets.on('connection', function(socket) {
     io.emit('grouping', groupBox);
   });
 
+  // ungroupingというイベントを受信した時、指定されたgroupBoxを削除し、
+  // childsのチャット群を表示させる
+  socket.on('ungrouping', function(ungroupobj) {
+    var GroupBox = mongoose.model('groupBox');
+    GroupBox.findOne({_id : ungroupobj.groupBoxId}, function(err, groupBox) {
+      var childs = groupBox.childs;
+      var pos = groupBox.position;
+      var Chat = mongoose.model('Chat');
+      Chat.find({ _id : { $in: childs } }, function(err, chats) {
+        io.emit('ungrouping', {
+          roomId : chats[0].roomId,
+          ungroupBoxId : ungroupobj.groupBoxId,
+          chats : chats
+        });
+      });
+      GroupBox.remove({_id : ungroupobj.groupBoxId}, function(err) { });
+    });
+  });
+
   // 接続が切断した時
   socket.on('disconnect', function() {
     console.log('disconnect');

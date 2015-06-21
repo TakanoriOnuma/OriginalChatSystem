@@ -277,6 +277,7 @@ function setContextMenu() {
     query : '#chatboardmenu'
   });
   $chatboardmenu = $('#chatboardmenu');
+  // グルーピングを選択したら
   $('li.grouping', $chatboardmenu).click(function(e) {
     var groupkeys = new Array();
     $('.groupselect').each(function(index, label) {
@@ -295,8 +296,13 @@ function setContextMenu() {
       y : e.pageY - pos.top
     });
   });
+  // アングルーピングを選択したら
   $('li.ungrouping', $chatboardmenu).click(function() {
-    alert('ungrouping');
+    $('.groupselect.groupbox').each(function(index, groupBox) {
+      SOCKET.emit('ungrouping', {
+        groupBoxId : $(groupBox).attr('key')
+      });
+    });
   });
 }
 
@@ -398,5 +404,21 @@ SOCKET.on('grouping', function(groupBox) {
 
   $.get('/chatmsgs', {roomId : ROOMID}, function(chats) {
     setGroupBox($('#chatboard'), groupBox, chats);
+  });
+});
+
+// ungroupingというイベントを受信したら選択されたグループボックスを削除して、ラベルに戻す
+SOCKET.on('ungrouping', function(ungroupBox) {
+  // ルームIDが違うなら何もしない
+  if(ungroupBox.roomId !== ROOMID) {
+    return;
+  }
+
+  // 指定されたグループボックスは削除する
+  $('.groupbox[key="' + ungroupBox.ungroupBoxId + '"]').remove();
+
+  // グループボックスにあったチャット内容をラベルに作り直す
+  $.each(ungroupBox.chats, function(index, chat) {
+    setLabel($('#chatboard'), chat);
   });
 });

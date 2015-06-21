@@ -368,7 +368,7 @@ SOCKET.on('toggleChat', function(chat) {
 // moveLabelというイベントを受信したら指定されたラベルの座標を移動する
 SOCKET.on('moveLabel', function(label) {
   var pos = $('#chatboard').position();
-  var $moveLabel = $('.label[key=' + label.chatId + ']');
+  var $moveLabel = $('.' + label.className + '[key=' + label.chatId + ']');
   $moveLabel.css({
     left : label.x + pos.left,
     top  : label.y + pos.top

@@ -105,6 +105,12 @@ function setGroupBox($chatboard, groupbox, chats) {
     $ul.append($('<li>').append(chat.text));
   });
   $groupbox.append($ul);
+
+  // もしアコーディオンパネルの状態が閉じるだったら閉じておく
+  if(!groupbox.isExpand) {
+    $('img', $titlebar).attr('src', 'images/plus.png');
+    $ul.hide();
+  }
   $chatboard.append($groupbox);
 }
 
@@ -275,13 +281,11 @@ function setHandlers() {
   $(document)
     .on('click', '.groupbox img', function() {
       var $img = $(this);
-      if($img.attr('src') === 'images/plus.png') {
-        $img.attr('src', 'images/minus.png');
-      }
-      else {
-        $img.attr('src', 'images/plus.png');
-      }
-      $('+ul', $img.parent()).slideToggle(500);
+      toggleAccordionPanel($img);
+      var $groupbox = $img.parent().parent();
+      SOCKET.emit('toggleAccordionPanel', {
+        groupBoxId : $groupbox.attr('key')
+      });
     });
 }
 
@@ -369,6 +373,17 @@ function postChat() {
   });
 }
 
+// アコーディオンパネルの開閉を行う
+function toggleAccordionPanel($img) {
+  if($img.attr('src') === 'images/plus.png') {
+    $img.attr('src', 'images/minus.png');
+  }
+  else {
+    $img.attr('src', 'images/plus.png');
+  }
+  $('+ul', $img.parent()).slideToggle(500);
+}
+
 // chatというイベントを受信したらチャットを追加する
 SOCKET.on('chat', function(chat) {
   // ルームIDが違うなら何もしない
@@ -438,4 +453,16 @@ SOCKET.on('ungrouping', function(ungroupBox) {
   $.each(ungroupBox.chats, function(index, chat) {
     setLabel($('#chatboard'), chat);
   });
+});
+
+// toggleAccordionPanelというイベントを受信したら選択された
+// グループボックスの開閉状態をトグルする
+SOCKET.on('toggleAccordionPanel', function(toggleBox) {
+  // ルームIDが違うなら何もしない
+  if(toggleBox.roomId !== ROOMID) {
+    return;
+  }
+
+  var $toggleBox = $('.groupbox[key="' + toggleBox.groupBoxId + '"]');
+  toggleAccordionPanel($('img', $toggleBox));
 });

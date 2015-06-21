@@ -174,6 +174,21 @@ io.sockets.on('connection', function(socket) {
     });
   });
 
+  // toggleAccordionPanelというイベントを受信した時、
+  // 指定されたgroupBoxの開閉状態をトグルする
+  socket.on('toggleAccordionPanel', function(toggleBox) {
+    var GroupBox = mongoose.model('groupBox');
+    GroupBox.findOne({_id : toggleBox.groupBoxId}, function(err, groupBox) {
+      groupBox.isExpand = !groupBox.isExpand;
+      groupBox.save();
+
+      socket.broadcast.emit('toggleAccordionPanel', {
+        roomId : groupBox.roomId,
+        groupBoxId : toggleBox.groupBoxId
+      });
+    });
+  });
+
   // 接続が切断した時
   socket.on('disconnect', function() {
     console.log('disconnect');

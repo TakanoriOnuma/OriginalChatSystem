@@ -87,8 +87,12 @@ function loadChat() {
 function setGroupBox($chatboard, groupbox, chats) {
   var pos = $chatboard.position();
   var $groupbox = $('<div>').addClass('groupbox').attr('key', groupbox._id);
+  var $titlebar = $('<div>');
+  $titlebar
+    .append($('<img>').attr('src', 'images/minus.png'))
+    .append(groupbox.title);
   $groupbox
-    .append($('<div>').append(groupbox.title))
+    .append($titlebar)
     .css({
       top:  groupbox.position.y + pos.top,
       left: groupbox.position.x + pos.left
@@ -265,6 +269,19 @@ function setHandlers() {
           }
         });
       }
+    });
+
+  // グループボックスのアコーディオンパネルの実装
+  $(document)
+    .on('click', '.groupbox img', function() {
+      var $img = $(this);
+      if($img.attr('src') === 'images/plus.png') {
+        $img.attr('src', 'images/minus.png');
+      }
+      else {
+        $img.attr('src', 'images/plus.png');
+      }
+      $('+ul', $img.parent()).slideToggle(500);
     });
 }
 

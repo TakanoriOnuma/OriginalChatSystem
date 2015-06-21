@@ -127,7 +127,14 @@ io.sockets.on('connection', function(socket) {
 
   // moveLabelというイベントを受信した時、指定したラベルを移動する
   socket.on('moveLabel', function(label) {
-    var Chat = mongoose.model('Chat');
+    var modelName = '';
+    if(label.className === 'label') {
+      modelName = 'Chat';
+    }
+    else {
+      modelName = 'groupBox';
+    }
+    var Chat = mongoose.model(modelName);
     Chat.findOne({_id : label.chatId}, function(err, chat) {
       chat.position = {x : label.x, y : label.y};
       chat.save();

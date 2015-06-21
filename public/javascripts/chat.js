@@ -77,8 +77,13 @@ function loadChat() {
 // グループボックスをチャットボードに表示する
 function setGroupBox($chatboard, groupbox, chats) {
   var pos = $chatboard.position();
-  var $groupbox = $('<div>').addClass('groupbox');
-  $groupbox.append($('<div>').append(groupbox.title));
+  var $groupbox = $('<div>').addClass('groupbox').attr('key', groupbox._id);
+  $groupbox
+    .append($('<div>').append(groupbox.title))
+    .css({
+      top:  groupbox.position.y + pos.top,
+      left: groupbox.position.x + pos.left
+    });
   var $ul = $('<ul>');
   $.each(groupbox.childs, function(index, child) {
     var chat = chats.find(function(elem, index, array) {
@@ -127,7 +132,7 @@ function setHandlers() {
   var $chatboard = $('#chatboard');
   $(document)
     // マウスダウン時に移動対象を取得する
-    .on('mousedown', '.label', function(e) {
+    .on('mousedown', '.label, .groupbox', function(e) {
       $moveLabel = $(this);
       pos.x = e.pageX - $(this).position().left;
       pos.y = e.pageY - $(this).position().top;
@@ -139,12 +144,12 @@ function setHandlers() {
       }
     })
     // マウスアップ時に移動対象を外す
-    .on('mouseup', '.label, body', function(e) {
+    .on('mouseup', '.label, .groupbox, body', function(e) {
       $moveLabel = null;
       $('body').removeClass('noneselect');
     })
     // マウス移動時に移動対象があれば移動する
-    .on('mousemove', '.label, body', function(e) {
+    .on('mousemove', '.label, .groupbox, body', function(e) {
       if($moveLabel !== null) {
         var newPos = { x : e.pageX - pos.x, y : e.pageY - pos.y };
         var boardPos = $chatboard.position();
@@ -165,11 +170,18 @@ function setHandlers() {
           top  : newPos.y
         });
         // 移動情報をサーバーに送る
-        SOCKET.emit('moveLabel', {
+        var sendValue = {
           x : newPos.x - $chatboard.position().left,
           y : newPos.y - $chatboard.position().top,
           chatId : $moveLabel.attr('key')
-        });
+        };
+        if($moveLabel.hasClass('label')) {
+          sendValue['className'] = 'label';
+        }
+        else {
+          sendValue['className'] = 'groupbox';
+        }
+        SOCKET.emit('moveLabel', sendValue);
         e.stopPropagation();
       }
     });

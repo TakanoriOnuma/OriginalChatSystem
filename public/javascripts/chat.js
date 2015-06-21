@@ -298,7 +298,18 @@ function setHandlers() {
       // エンターキーが押されたら
       if(e.which === 13) {
         var $title = $(this);
-        $title.replaceWith($('<span>').append($title.val()));
+        var title = $title.val();
+        if(title.length <= 0) {
+          alert('タイトルは1文字以上にしてください。');
+          return;
+        }
+        var $groupbox = $title.parent().parent();
+        $title.replaceWith($('<span>').append(title));
+
+        SOCKET.emit('changeGroupTitle', {
+          groupBoxId : $groupbox.attr('key'),
+          title : title
+        });
       }
     });
 }
@@ -479,4 +490,16 @@ SOCKET.on('toggleAccordionPanel', function(toggleBox) {
 
   var $toggleBox = $('.groupbox[key="' + toggleBox.groupBoxId + '"]');
   toggleAccordionPanel($('img', $toggleBox));
+});
+
+// changeGroupTitleというイベントを受信したら
+// 選択されたグループボックスのタイトルを変更する
+SOCKET.on('changeGroupTitle', function(changeBox) {
+  // ルームIDが違うなら何もしない
+  if(changeBox.roomId !== ROOMID) {
+    return;
+  }
+
+  var $changeBox = $('.groupbox[key="' + changeBox.groupBoxId + '"]');
+  $('span', $changeBox).html(changeBox.title);
 });

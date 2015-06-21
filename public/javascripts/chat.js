@@ -270,20 +270,27 @@ function setHandlers() {
 
 // コンテキストメニューをセットする
 function setContextMenu() {
+  var pos = $('#chatboard').position();
+
   $('#chatboard').showMenu({
     opacity : 0.8,
     query : '#chatboardmenu'
   });
   $chatboardmenu = $('#chatboardmenu');
-  $('li.grouping', $chatboardmenu).click(function() {
+  $('li.grouping', $chatboardmenu).click(function(e) {
     var groupkeys = new Array();
     $('.groupselect').each(function(index, label) {
       groupkeys.push($(label).attr('key'));
     });
-    alert(groupkeys);
+    if(groupkeys.length <= 0) {
+      alert('選択しているラベルがありません。');
+      return;
+    }
     SOCKET.emit('grouping', {
       roomId : ROOMID,
-      groupkeys : groupkeys
+      groupkeys : groupkeys,
+      x : e.pageX - pos.left,
+      y : e.pageY - pos.top
     });
   });
   $('li.ungrouping', $chatboardmenu).click(function() {
@@ -372,5 +379,22 @@ SOCKET.on('moveLabel', function(label) {
   $moveLabel.css({
     left : label.x + pos.left,
     top  : label.y + pos.top
+  });
+});
+
+// groupingというイベントを受信したら選択されたチャットをグループボックスにまとめる
+SOCKET.on('grouping', function(groupBox) {
+  // ルームIDが違うなら何もしない
+  if(groupBox.roomId !== ROOMID) {
+    return;
+  }
+
+  // グルーピングされるラベルはチャットボードから削除する
+  $.each(groupBox.childs, function(index, chatId) {
+    $('.label[key="' + chatId + '"]').remove();
+  });
+
+  $.get('/chatmsgs', {roomId : ROOMID}, function(chats) {
+    setGroupBox($('#chatboard'), groupBox, chats);
   });
 });

@@ -148,11 +148,11 @@ io.sockets.on('connection', function(socket) {
     var groupBox = new GroupBox();
     groupBox.roomId = groupobj.roomId;
     groupBox.title = 'グループ';
-    groupBox.position = {x : 0, y : 0};
+    groupBox.position = {x : groupobj.x, y : groupobj.y};
     groupBox.childs = groupobj.groupkeys;
     groupBox.save();
 
-
+    io.emit('grouping', groupBox);
   });
 
   // 接続が切断した時

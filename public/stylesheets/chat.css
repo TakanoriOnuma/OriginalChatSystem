@@ -43,6 +43,12 @@ body {
   width: 200px;
 }
 
+.chatlist {
+  overflow-y: scroll;
+  border: 1px solid black;
+  height: 400px;
+}
+
 .chatlist div {
   border: 1px solid black;
 }

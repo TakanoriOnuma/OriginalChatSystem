@@ -102,7 +102,7 @@ function setGroupBox($chatboard, groupbox, chats) {
     var chat = chats.find(function(elem, index, array) {
       return (elem._id === child);
     });
-    $ul.append($('<li>').append(chat.text));
+    $ul.append($('<li>').text(chat.text));
   });
   $groupbox.append($ul);
 
@@ -117,7 +117,7 @@ function setGroupBox($chatboard, groupbox, chats) {
 // チャット情報からチャットボードにラベルをセットする
 function setLabel($chatboard, chat) {
   var pos = $chatboard.position();
-  var $label = $('<div>').addClass('label').append(chat.text);
+  var $label = $('<div>').addClass('label').text(chat.text);
   $label
     .show()
     .attr('key', chat._id)

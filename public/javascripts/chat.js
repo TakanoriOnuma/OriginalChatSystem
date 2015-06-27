@@ -90,7 +90,7 @@ function setGroupBox($chatboard, groupbox, chats) {
   var $titlebar = $('<div>');
   $titlebar
     .append($('<img>').attr('src', 'images/minus.png'))
-    .append($('<span>').append(groupbox.title));
+    .append($('<span>').text(groupbox.title));
   $groupbox
     .append($titlebar)
     .css({
@@ -304,7 +304,7 @@ function setHandlers() {
           return;
         }
         var $groupbox = $title.parent().parent();
-        $title.replaceWith($('<span>').append(title));
+        $title.replaceWith($('<span>').text(title));
 
         SOCKET.emit('changeGroupTitle', {
           groupBoxId : $groupbox.attr('key'),

@@ -292,7 +292,7 @@ function setHandlers() {
   $(document)
     .on('dblclick', '.groupbox div', function() {
       var $title = $('span', this);
-      $title.replaceWith($('<input type="text">').val($title.html()));
+      $title.replaceWith($('<input type="text">').val($title.text()));
     })
     .on('keypress', '.groupbox input', function(e) {
       // エンターキーが押されたら
@@ -501,5 +501,5 @@ SOCKET.on('changeGroupTitle', function(changeBox) {
   }
 
   var $changeBox = $('.groupbox[key="' + changeBox.groupBoxId + '"]');
-  $('span', $changeBox).html(changeBox.title);
+  $('span', $changeBox).text(changeBox.title);
 });

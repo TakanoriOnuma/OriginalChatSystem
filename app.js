@@ -37,11 +37,13 @@ app.use('/chat', chat);
 var Schema = mongoose.Schema;
 // roomスキーマの定義
 var roomSchema = new Schema({
-  title    : String,
-  creator  : String,
-  detail   : String,
-  created  : { type: Date, default: Date.now },
-  password : String
+  title     : String,
+  creator   : String,
+  detail    : String,
+  created   : { type: Date, default: Date.now },
+  password  : String,
+  boardSize : { type: Object, default: {width: 650, height: 550} },
+  trashPos  : { type: Object, default: {x: 0, y: 0} }
 });
 mongoose.model('Room', roomSchema);
 

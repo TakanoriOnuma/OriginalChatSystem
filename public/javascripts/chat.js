@@ -10,7 +10,7 @@ $(function() {
 function init() {
   loadParams();
   loadTemplates();
-  loadTopic();
+  loadRoom();
   loadChat();
   setHandlers();
   setContextMenu();
@@ -39,14 +39,35 @@ function loadTemplates() {
   CHATTEMP = Handlebars.compile(source);
 }
 
+// 部屋情報の読み込み
 // 部屋のタイトルと詳細情報を読み込んで表示
-function loadTopic() {
+// ゴミ箱の座標、チャットボードの大きさを調節
+function loadRoom() {
   var $topic = $('#topic');
+  var $chatboard = $('#chatboard');
 
   $.get('/room', {roomId : ROOMID}, function(room) {
     $topic
       .append('<h2>' + room.title + '</h2>')
       .append(room.detail);
+
+    // まだ登録されてなかったら初期化しておく
+    if(room.boardSize == null) {
+      room.boardSize = { width : 650, height : 550 };
+    }
+    $chatboard.css({
+      'width'  : room.boardSize.width,
+      'height' : room.boardSize.height
+    });
+
+    // まだ登録されてなかったら初期化しておく
+    if(room.trashPos == null) {
+      room.trashPos = { x : 0, y : $chatboard.outerHeight() - 130 };
+    }
+    $('.trashbox').css({
+      'left' : room.trashPos.x + $chatboard.position().left,
+      'top'  : room.trashPos.y + $chatboard.position().top
+    });
   });
 }
 

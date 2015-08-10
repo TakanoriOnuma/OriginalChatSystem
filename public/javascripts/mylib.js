@@ -59,3 +59,22 @@ function isBoxing($elem, $box) {
     && $elem.position().top > $box.position().top
     && $elem.position().top + $elem.outerHeight() < $box.position().top + $box.outerHeight());
 }
+
+// boxが$frameを越えないようにサイズ調節をする
+// box parameters:top, left, width, height
+function sizeFix(box, $frame) {
+  if(box.left < $frame.position().left) {
+    box.width -= $frame.position().left - box.left;
+    box.left = $frame.position().left;
+  }
+  if(box.top < $frame.position().top) {
+    box.height -= $frame.position().top - box.top;
+    box.top = $frame.position().top;
+  }
+  if(box.left + box.width > $frame.position().left + $frame.outerWidth()) {
+    box.width = $frame.position().left + $frame.outerWidth() - box.left;
+  }
+  if(box.top + box.height > $frame.position().top + $frame.outerHeight()) {
+    box.height = $frame.position().top + $frame.outerHeight() - box.top;
+  }
+}

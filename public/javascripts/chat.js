@@ -266,14 +266,13 @@ function setHandlers() {
       if(!event.ctrlKey) {
         $('.label:visible, .groupbox').removeClass('groupselect');
       }
-    })
+    });
+  $(document)
     // マウスアップ時はドラッグ表示タグをnullにしておく
     .mouseup(function(e) {
       // ドラッグを表示するタグがあるなら処理する
       if($dragfield !== null) {
-        if($dragfield.width() === 0 || $dragfield.height() === 0) {
-          $dragfield.hide();
-        }
+        $dragfield.hide();
         $dragfield = null;
         $('body').removeClass('noneselect');
       }
@@ -282,25 +281,27 @@ function setHandlers() {
     .mousemove(function(e) {
       // ドラッグ範囲を表示するタグがあるなら処理する
       if($dragfield !== null) {
-        var pos = $dragfield.position();
-        var width  = e.pageX - startPt.x;
-        var height = e.pageY - startPt.y;
+        var box = $dragfield.position();
+        box.width  = e.pageX - startPt.x;
+        box.height = e.pageY - startPt.y;
         // 幅や高さがマイナスになったら左上の座標をその分動かす
-        if(width < 0) {
-          pos.left = startPt.x + width;
-          width *= -1;
+        if(box.width < 0) {
+          box.left = startPt.x + box.width;
+          box.width *= -1;
         }
-        if(height < 0) {
-          pos.top = startPt.y + height;
-          height *= -1;
+        if(box.height < 0) {
+          box.top = startPt.y + box.height;
+          box.height *= -1;
         }
+        sizeFix(box, $('#chatboard'));
+
         $dragfield
           .css({
-            left : pos.left,
-            top  : pos.top
+            left : box.left,
+            top  : box.top
           })
-          .width(width)
-          .height(height);
+          .width(box.width)
+          .height(box.height);
 
         $('.label:visible, .groupbox').each(function(index, label) {
           var $label = $(label);

@@ -182,37 +182,62 @@ function setHandlers() {
     // マウス移動時に移動対象があれば移動する
     .on('mousemove', '.label, .groupbox, body', function(e) {
       if($moveLabel !== null) {
-        var newPos = { x : e.pageX - pos.x, y : e.pageY - pos.y };
-        var boardPos = $chatboard.position();
-        // チャットボードの左と上の枠を超えないように座標を調節する
-        newPos.x = (newPos.x < boardPos.left) ? boardPos.left : newPos.x;
-        newPos.y = (newPos.y < boardPos.top)  ? boardPos.top  : newPos.y;
-
-        // チャットボードの右と下の枠は超えそうなら大きくして調節する（今は取りあえず超えないようにする）
-        if(newPos.x + $moveLabel.outerWidth() > boardPos.left + $chatboard.outerWidth()) {
-          newPos.x = boardPos.left + $chatboard.outerWidth() - $moveLabel.outerWidth();
-        }
-        if(newPos.y + $moveLabel.outerHeight() > boardPos.top + $chatboard.outerHeight()) {
-          newPos.y = boardPos.top + $chatboard.outerHeight() - $moveLabel.outerHeight();
-        }
-
-        $moveLabel.css({
-          left : newPos.x,
-          top  : newPos.y
-        });
-        // 移動情報をサーバーに送る
-        var sendValue = {
-          x : newPos.x - $chatboard.position().left,
-          y : newPos.y - $chatboard.position().top,
-          chatId : $moveLabel.attr('key')
+        var move = {
+          x : e.pageX - ($moveLabel.position().left + pos.x),
+          y : e.pageY - ($moveLabel.position().top  + pos.y)
         };
-        if($moveLabel.hasClass('label')) {
-          sendValue['className'] = 'label';
+        // 移動するラベルの中で左上の座標と右下の座標を求める
+        var topLeftPos = { x : $(document).outerWidth(), y : $(document).outerHeight() };
+        var bottomRightPos = { x : 0, y : 0 };
+        $('.groupselect').each(function(idx, elem) {
+          if(topLeftPos.x > $(this).position().left) {
+            topLeftPos.x = $(this).position().left;
+          }
+          if(topLeftPos.y > $(this).position().top) {
+            topLeftPos.y = $(this).position().top;
+          }
+          if(bottomRightPos.x < $(this).position().left + $(this).outerWidth()) {
+            bottomRightPos.x = $(this).position().left + $(this).outerWidth();
+          }
+          if(bottomRightPos.y < $(this).position().top + $(this).outerHeight()) {
+            bottomRightPos.y = $(this).position().top + $(this).outerHeight();
+          }
+        });
+
+        var boardPos = $chatboard.position();
+        // チャットボードの左と上の枠を超えないように移動量を調節する
+        move.x = (topLeftPos.x + move.x < boardPos.left) ? boardPos.left - topLeftPos.x : move.x;
+        move.y = (topLeftPos.y + move.y < boardPos.top)  ? boardPos.top  - topLeftPos.y : move.y;
+
+        // チャットボードの右と下の枠は超えないように移動量を調節する
+        if(bottomRightPos.x + move.x > boardPos.left + $chatboard.outerWidth()) {
+          move.x = boardPos.left + $chatboard.outerWidth() - bottomRightPos.x;
         }
-        else {
-          sendValue['className'] = 'groupbox';
+        if(bottomRightPos.y + move.y > boardPos.top + $chatboard.outerHeight()) {
+          move.y = boardPos.top + $chatboard.outerHeight() - bottomRightPos.y;
         }
-        SOCKET.emit('moveLabel', sendValue);
+
+        $('.groupselect').each(function(idx, elem) {
+          var pos = $(this).position();
+          $(this).css({
+            left : pos.left + move.x,
+            top  : pos.top  + move.y
+          });
+          // 移動情報をサーバーに送る
+          var sendValue = {
+            x : pos.left + move.x - $chatboard.position().left,
+            y : pos.top  + move.y - $chatboard.position().top,
+            chatId : $(this).attr('key')
+          };
+          if($(this).hasClass('label')) {
+            sendValue['className'] = 'label';
+          }
+          else {
+            sendValue['className'] = 'groupbox';
+          }
+          SOCKET.emit('moveLabel', sendValue);
+        });
+
         e.stopPropagation();
       }
     });

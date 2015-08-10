@@ -78,3 +78,13 @@ function sizeFix(box, $frame) {
     box.height = $frame.position().top + $frame.outerHeight() - box.top;
   }
 }
+
+// 入力キーの状態をクロスブラウザで取得する
+// return keys(ctrl, shift)
+function getKeys(e) {
+  var keys = {};
+  keys['ctrl']  = (e != null) ? e.ctrlKey : event.ctrlKey;
+  keys['shift'] = (e != null) ? e.shiftKey : event.shiftKey;
+
+  return keys;
+}

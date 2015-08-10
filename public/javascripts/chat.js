@@ -155,8 +155,9 @@ function setHandlers() {
   $chatboard
     // マウスダウン時に移動対象を取得する
     .on('mousedown', '.label, .groupbox', function(e) {
+      var keys = getKeys(e);
       $moveLabel = $(this);
-      if(!event.ctrlKey && !$moveLabel.hasClass('groupselect')) {
+      if(!keys['ctrl'] && !$moveLabel.hasClass('groupselect')) {
         $('.label, .groupbox').each(function(idx, elem) {
           if($(this).attr('key') !== $moveLabel.attr('key')) {
             $(this).removeClass('groupselect');
@@ -262,8 +263,9 @@ function setHandlers() {
 
       // ドラッグ中は文字の選択を無効にする
       $('body').addClass('noneselect');
+      var keys = getKeys(e);
       // Ctrlキーを押していない時はラベルの選択を解除する
-      if(!event.ctrlKey) {
+      if(!keys['ctrl']) {
         $('.label:visible, .groupbox').removeClass('groupselect');
       }
     });

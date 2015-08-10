@@ -149,58 +149,96 @@ function setHandlers() {
   var pos = {x: 0, y: 0};
   var $moveLabel = null;
   var $chatboard = $('#chatboard');
-  $(document)
+
+  // chatboard内にあるタグに対するイベント処理
+  // documentからいくよりもイベントが早く取得できる
+  $chatboard
     // マウスダウン時に移動対象を取得する
     .on('mousedown', '.label, .groupbox', function(e) {
+      var keys = getKeys(e);
       $moveLabel = $(this);
+      if(!keys['ctrl'] && !$moveLabel.hasClass('groupselect')) {
+        $('.label, .groupbox').each(function(idx, elem) {
+          if($(this).attr('key') !== $moveLabel.attr('key')) {
+            $(this).removeClass('groupselect');
+          }
+        });
+      }
+      $moveLabel.addClass('groupselect');
+
       pos.x = e.pageX - $(this).position().left;
       pos.y = e.pageY - $(this).position().top;
       $('body').addClass('noneselect');
-      // イベントがchatboardのほうが早いため、処理をしていたら取り消す
-      if($dragfield !== null) {
-        $dragfield.hide();
-        $dragfield = null;
-      }
-    })
+
+      // チャットボードのイベントは起こさないようにする
+      e.stopPropagation();
+    });
+
+  $(document)
     // マウスアップ時に移動対象を外す
-    .on('mouseup', '.label, .groupbox, body', function(e) {
+    .mouseup(function(e) {
       $moveLabel = null;
       $('body').removeClass('noneselect');
     })
     // マウス移動時に移動対象があれば移動する
-    .on('mousemove', '.label, .groupbox, body', function(e) {
+    .mousemove(function(e) {
       if($moveLabel !== null) {
-        var newPos = { x : e.pageX - pos.x, y : e.pageY - pos.y };
-        var boardPos = $chatboard.position();
-        // チャットボードの左と上の枠を超えないように座標を調節する
-        newPos.x = (newPos.x < boardPos.left) ? boardPos.left : newPos.x;
-        newPos.y = (newPos.y < boardPos.top)  ? boardPos.top  : newPos.y;
-
-        // チャットボードの右と下の枠は超えそうなら大きくして調節する（今は取りあえず超えないようにする）
-        if(newPos.x + $moveLabel.outerWidth() > boardPos.left + $chatboard.outerWidth()) {
-          newPos.x = boardPos.left + $chatboard.outerWidth() - $moveLabel.outerWidth();
-        }
-        if(newPos.y + $moveLabel.outerHeight() > boardPos.top + $chatboard.outerHeight()) {
-          newPos.y = boardPos.top + $chatboard.outerHeight() - $moveLabel.outerHeight();
-        }
-
-        $moveLabel.css({
-          left : newPos.x,
-          top  : newPos.y
-        });
-        // 移動情報をサーバーに送る
-        var sendValue = {
-          x : newPos.x - $chatboard.position().left,
-          y : newPos.y - $chatboard.position().top,
-          chatId : $moveLabel.attr('key')
+        var move = {
+          x : e.pageX - ($moveLabel.position().left + pos.x),
+          y : e.pageY - ($moveLabel.position().top  + pos.y)
         };
-        if($moveLabel.hasClass('label')) {
-          sendValue['className'] = 'label';
+        // 移動するラベルの中で左上の座標と右下の座標を求める
+        var topLeftPos = { x : $(document).outerWidth(), y : $(document).outerHeight() };
+        var bottomRightPos = { x : 0, y : 0 };
+        $('.groupselect').each(function(idx, elem) {
+          if(topLeftPos.x > $(this).position().left) {
+            topLeftPos.x = $(this).position().left;
+          }
+          if(topLeftPos.y > $(this).position().top) {
+            topLeftPos.y = $(this).position().top;
+          }
+          if(bottomRightPos.x < $(this).position().left + $(this).outerWidth()) {
+            bottomRightPos.x = $(this).position().left + $(this).outerWidth();
+          }
+          if(bottomRightPos.y < $(this).position().top + $(this).outerHeight()) {
+            bottomRightPos.y = $(this).position().top + $(this).outerHeight();
+          }
+        });
+
+        var boardPos = $chatboard.position();
+        // チャットボードの左と上の枠を超えないように移動量を調節する
+        move.x = (topLeftPos.x + move.x < boardPos.left) ? boardPos.left - topLeftPos.x : move.x;
+        move.y = (topLeftPos.y + move.y < boardPos.top)  ? boardPos.top  - topLeftPos.y : move.y;
+
+        // チャットボードの右と下の枠は超えないように移動量を調節する
+        if(bottomRightPos.x + move.x > boardPos.left + $chatboard.outerWidth()) {
+          move.x = boardPos.left + $chatboard.outerWidth() - bottomRightPos.x;
         }
-        else {
-          sendValue['className'] = 'groupbox';
+        if(bottomRightPos.y + move.y > boardPos.top + $chatboard.outerHeight()) {
+          move.y = boardPos.top + $chatboard.outerHeight() - bottomRightPos.y;
         }
-        SOCKET.emit('moveLabel', sendValue);
+
+        $('.groupselect').each(function(idx, elem) {
+          var pos = $(this).position();
+          $(this).css({
+            left : pos.left + move.x,
+            top  : pos.top  + move.y
+          });
+          // 移動情報をサーバーに送る
+          var sendValue = {
+            x : pos.left + move.x - $chatboard.position().left,
+            y : pos.top  + move.y - $chatboard.position().top,
+            chatId : $(this).attr('key')
+          };
+          if($(this).hasClass('label')) {
+            sendValue['className'] = 'label';
+          }
+          else {
+            sendValue['className'] = 'groupbox';
+          }
+          SOCKET.emit('moveLabel', sendValue);
+        });
+
         e.stopPropagation();
       }
     });
@@ -225,18 +263,18 @@ function setHandlers() {
 
       // ドラッグ中は文字の選択を無効にする
       $('body').addClass('noneselect');
-      // 右クリックの時以外ラベルの選択を消しておく
-      if(e.which !== 3) {
+      var keys = getKeys(e);
+      // Ctrlキーを押していない時はラベルの選択を解除する
+      if(!keys['ctrl']) {
         $('.label:visible, .groupbox').removeClass('groupselect');
       }
-    })
+    });
+  $(document)
     // マウスアップ時はドラッグ表示タグをnullにしておく
     .mouseup(function(e) {
       // ドラッグを表示するタグがあるなら処理する
       if($dragfield !== null) {
-        if($dragfield.width() === 0 || $dragfield.height() === 0) {
-          $dragfield.hide();
-        }
+        $dragfield.hide();
         $dragfield = null;
         $('body').removeClass('noneselect');
       }
@@ -245,31 +283,34 @@ function setHandlers() {
     .mousemove(function(e) {
       // ドラッグ範囲を表示するタグがあるなら処理する
       if($dragfield !== null) {
-        var pos = $dragfield.position();
-        var width  = e.pageX - startPt.x;
-        var height = e.pageY - startPt.y;
+        var box = $dragfield.position();
+        box.width  = e.pageX - startPt.x;
+        box.height = e.pageY - startPt.y;
         // 幅や高さがマイナスになったら左上の座標をその分動かす
-        if(width < 0) {
-          pos.left = startPt.x + width;
-          width *= -1;
+        if(box.width < 0) {
+          box.left = startPt.x + box.width;
+          box.width *= -1;
         }
-        if(height < 0) {
-          pos.top = startPt.y + height;
-          height *= -1;
+        if(box.height < 0) {
+          box.top = startPt.y + box.height;
+          box.height *= -1;
         }
+        sizeFix(box, $('#chatboard'));
+
         $dragfield
           .css({
-            left : pos.left,
-            top  : pos.top
+            left : box.left,
+            top  : box.top
           })
-          .width(width)
-          .height(height);
+          .width(box.width)
+          .height(box.height);
 
         $('.label:visible, .groupbox').each(function(index, label) {
           var $label = $(label);
           if(isBoxing($label, $dragfield)) {
             $label.addClass('groupselect');
           }
+          // Ctrlを押しているときは単純に選択を外さない方が良さそう
           else {
             $label.removeClass('groupselect');
           }

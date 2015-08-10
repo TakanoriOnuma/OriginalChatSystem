@@ -8,6 +8,7 @@
   border-style: solid;
   margin: 0;
   padding: 10px;
+  z-index: 100;
 }
 
 #topic h2 {
@@ -40,6 +41,12 @@ body {
   -webkit-box-flex: 1.0;
   -box-flex: 1.0;
   width: 200px;
+}
+
+.chatlist {
+  overflow-y: scroll;
+  border: 1px solid black;
+  height: 400px;
 }
 
 .chatlist div {

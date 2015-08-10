@@ -90,7 +90,7 @@ function setGroupBox($chatboard, groupbox, chats) {
   var $titlebar = $('<div>');
   $titlebar
     .append($('<img>').attr('src', 'images/minus.png'))
-    .append($('<span>').append(groupbox.title));
+    .append($('<span>').text(groupbox.title));
   $groupbox
     .append($titlebar)
     .css({
@@ -102,7 +102,7 @@ function setGroupBox($chatboard, groupbox, chats) {
     var chat = chats.find(function(elem, index, array) {
       return (elem._id === child);
     });
-    $ul.append($('<li>').append(chat.text));
+    $ul.append($('<li>').text(chat.text));
   });
   $groupbox.append($ul);
 
@@ -117,7 +117,7 @@ function setGroupBox($chatboard, groupbox, chats) {
 // チャット情報からチャットボードにラベルをセットする
 function setLabel($chatboard, chat) {
   var pos = $chatboard.position();
-  var $label = $('<div>').addClass('label').append(chat.text);
+  var $label = $('<div>').addClass('label').text(chat.text);
   $label
     .show()
     .attr('key', chat._id)
@@ -292,7 +292,7 @@ function setHandlers() {
   $(document)
     .on('dblclick', '.groupbox div', function() {
       var $title = $('span', this);
-      $title.replaceWith($('<input type="text">').val($title.html()));
+      $title.replaceWith($('<input type="text">').val($title.text()));
     })
     .on('keypress', '.groupbox input', function(e) {
       // エンターキーが押されたら
@@ -304,7 +304,7 @@ function setHandlers() {
           return;
         }
         var $groupbox = $title.parent().parent();
-        $title.replaceWith($('<span>').append(title));
+        $title.replaceWith($('<span>').text(title));
 
         SOCKET.emit('changeGroupTitle', {
           groupBoxId : $groupbox.attr('key'),
@@ -501,5 +501,5 @@ SOCKET.on('changeGroupTitle', function(changeBox) {
   }
 
   var $changeBox = $('.groupbox[key="' + changeBox.groupBoxId + '"]');
-  $('span', $changeBox).html(changeBox.title);
+  $('span', $changeBox).text(changeBox.title);
 });

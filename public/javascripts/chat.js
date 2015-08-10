@@ -175,12 +175,12 @@ function setHandlers() {
 
   $(document)
     // マウスアップ時に移動対象を外す
-    .on('mouseup', '.label, .groupbox, body', function(e) {
+    .mouseup(function(e) {
       $moveLabel = null;
       $('body').removeClass('noneselect');
     })
     // マウス移動時に移動対象があれば移動する
-    .on('mousemove', '.label, .groupbox, body', function(e) {
+    .mousemove(function(e) {
       if($moveLabel !== null) {
         var move = {
           x : e.pageX - ($moveLabel.position().left + pos.x),

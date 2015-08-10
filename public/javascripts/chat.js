@@ -149,19 +149,31 @@ function setHandlers() {
   var pos = {x: 0, y: 0};
   var $moveLabel = null;
   var $chatboard = $('#chatboard');
-  $(document)
+
+  // chatboard内にあるタグに対するイベント処理
+  // documentからいくよりもイベントが早く取得できる
+  $chatboard
     // マウスダウン時に移動対象を取得する
     .on('mousedown', '.label, .groupbox', function(e) {
       $moveLabel = $(this);
+      if(!event.ctrlKey && !$moveLabel.hasClass('groupselect')) {
+        $('.label, .groupbox').each(function(idx, elem) {
+          if($(this).attr('key') !== $moveLabel.attr('key')) {
+            $(this).removeClass('groupselect');
+          }
+        });
+      }
+      $moveLabel.addClass('groupselect');
+
       pos.x = e.pageX - $(this).position().left;
       pos.y = e.pageY - $(this).position().top;
       $('body').addClass('noneselect');
-      // イベントがchatboardのほうが早いため、処理をしていたら取り消す
-      if($dragfield !== null) {
-        $dragfield.hide();
-        $dragfield = null;
-      }
-    })
+
+      // チャットボードのイベントは起こさないようにする
+      e.stopPropagation();
+    });
+
+  $(document)
     // マウスアップ時に移動対象を外す
     .on('mouseup', '.label, .groupbox, body', function(e) {
       $moveLabel = null;
@@ -225,8 +237,8 @@ function setHandlers() {
 
       // ドラッグ中は文字の選択を無効にする
       $('body').addClass('noneselect');
-      // 右クリックの時以外ラベルの選択を消しておく
-      if(e.which !== 3) {
+      // Ctrlキーを押していない時はラベルの選択を解除する
+      if(!event.ctrlKey) {
         $('.label:visible, .groupbox').removeClass('groupselect');
       }
     })
@@ -270,6 +282,7 @@ function setHandlers() {
           if(isBoxing($label, $dragfield)) {
             $label.addClass('groupselect');
           }
+          // Ctrlを押しているときは単純に選択を外さない方が良さそう
           else {
             $label.removeClass('groupselect');
           }

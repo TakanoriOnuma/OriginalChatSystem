@@ -13,6 +13,7 @@ function init() {
   loadTopic();
   loadChat();
   setHandlers();
+  setContextMenu();
 }
 
 // URLにあるパラメータの読み込み
@@ -59,17 +60,64 @@ function loadChat() {
     var compiledHtml = CHATTEMP(chats);
     $chatlist.html(compiledHtml);
 
-    // チャットボードにも登録
-    $.each(chats, function(index, chat) {
-      setLabel($chatboard, chat);
+    // グループボックスの表示
+    $.get('/groupboxes', {roomId : ROOMID}, function(groupboxes) {
+      $.each(groupboxes, function(index, groupbox) {
+        setGroupBox($chatboard, groupbox, chats);
+        // グループボックスで使用したチャットは配列から取り除く
+        $.each(groupbox.childs, function(index, chatId) {
+          for(var i = 0; i < chats.length; i++) {
+            if(chats[i]._id === chatId) {
+              chats.splice(i, 1);
+              break;
+            }
+          }
+        });
+      });
+
+      // チャット情報をチャットボードにも登録
+      $.each(chats, function(index, chat) {
+        setLabel($chatboard, chat);
+      });
     });
   });
+}
+
+// グループボックスをチャットボードに表示する
+function setGroupBox($chatboard, groupbox, chats) {
+  var pos = $chatboard.position();
+  var $groupbox = $('<div>').addClass('groupbox').attr('key', groupbox._id);
+  var $titlebar = $('<div>');
+  $titlebar
+    .append($('<img>').attr('src', 'images/minus.png'))
+    .append($('<span>').text(groupbox.title));
+  $groupbox
+    .append($titlebar)
+    .css({
+      top:  groupbox.position.y + pos.top,
+      left: groupbox.position.x + pos.left
+    });
+  var $ul = $('<ul>');
+  $.each(groupbox.childs, function(index, child) {
+    var chat = chats.find(function(elem, index, array) {
+      return (elem._id === child);
+    });
+    $ul.append($('<li>').text(chat.text));
+  });
+  $groupbox.append($ul);
+
+  // もしアコーディオンパネルの状態が閉じるだったら閉じておく
+  if(!groupbox.isExpand) {
+    $('img', $titlebar).attr('src', 'images/plus.png');
+    $ul.hide();
+  }
+  $chatboard.append($groupbox);
 }
 
 // チャット情報からチャットボードにラベルをセットする
 function setLabel($chatboard, chat) {
   var pos = $chatboard.position();
-  var $label = $('<div>').addClass('label').append(chat.text);
+  var $label = $('<div>').addClass('label').text(chat.text);
   $label
     .show()
     .attr('key', chat._id)
@@ -101,49 +149,248 @@ function setHandlers() {
   var pos = {x: 0, y: 0};
   var $moveLabel = null;
   var $chatboard = $('#chatboard');
-  $(document)
+
+  // chatboard内にあるタグに対するイベント処理
+  // documentからいくよりもイベントが早く取得できる
+  $chatboard
     // マウスダウン時に移動対象を取得する
-    .on('mousedown', '.label', function(e) {
+    .on('mousedown', '.label, .groupbox', function(e) {
+      var keys = getKeys(e);
       $moveLabel = $(this);
+      if(!keys['ctrl'] && !$moveLabel.hasClass('groupselect')) {
+        $('.label, .groupbox').each(function(idx, elem) {
+          if($(this).attr('key') !== $moveLabel.attr('key')) {
+            $(this).removeClass('groupselect');
+          }
+        });
+      }
+      $moveLabel.addClass('groupselect');
+
       pos.x = e.pageX - $(this).position().left;
       pos.y = e.pageY - $(this).position().top;
       $('body').addClass('noneselect');
-    })
+
+      // チャットボードのイベントは起こさないようにする
+      e.stopPropagation();
+    });
+
+  $(document)
     // マウスアップ時に移動対象を外す
-    .on('mouseup', '.label, body', function(e) {
+    .mouseup(function(e) {
       $moveLabel = null;
       $('body').removeClass('noneselect');
     })
     // マウス移動時に移動対象があれば移動する
-    .on('mousemove', '.label, body', function(e) {
+    .mousemove(function(e) {
       if($moveLabel !== null) {
-        var newPos = { x : e.pageX - pos.x, y : e.pageY - pos.y };
+        var move = {
+          x : e.pageX - ($moveLabel.position().left + pos.x),
+          y : e.pageY - ($moveLabel.position().top  + pos.y)
+        };
+        // 移動するラベルの中で左上の座標と右下の座標を求める
+        var topLeftPos = { x : $(document).outerWidth(), y : $(document).outerHeight() };
+        var bottomRightPos = { x : 0, y : 0 };
+        $('.groupselect').each(function(idx, elem) {
+          if(topLeftPos.x > $(this).position().left) {
+            topLeftPos.x = $(this).position().left;
+          }
+          if(topLeftPos.y > $(this).position().top) {
+            topLeftPos.y = $(this).position().top;
+          }
+          if(bottomRightPos.x < $(this).position().left + $(this).outerWidth()) {
+            bottomRightPos.x = $(this).position().left + $(this).outerWidth();
+          }
+          if(bottomRightPos.y < $(this).position().top + $(this).outerHeight()) {
+            bottomRightPos.y = $(this).position().top + $(this).outerHeight();
+          }
+        });
+
         var boardPos = $chatboard.position();
-        // チャットボードの左と上の枠を超えないように座標を調節する
-        newPos.x = (newPos.x < boardPos.left) ? boardPos.left : newPos.x;
-        newPos.y = (newPos.y < boardPos.top)  ? boardPos.top  : newPos.y;
+        // チャットボードの左と上の枠を超えないように移動量を調節する
+        move.x = (topLeftPos.x + move.x < boardPos.left) ? boardPos.left - topLeftPos.x : move.x;
+        move.y = (topLeftPos.y + move.y < boardPos.top)  ? boardPos.top  - topLeftPos.y : move.y;
 
-        // チャットボードの右と下の枠は超えそうなら大きくして調節する（今は取りあえず超えないようにする）
-        if(newPos.x + $moveLabel.outerWidth() > boardPos.left + $chatboard.outerWidth()) {
-          newPos.x = boardPos.left + $chatboard.outerWidth() - $moveLabel.outerWidth();
+        // チャットボードの右と下の枠は超えないように移動量を調節する
+        if(bottomRightPos.x + move.x > boardPos.left + $chatboard.outerWidth()) {
+          move.x = boardPos.left + $chatboard.outerWidth() - bottomRightPos.x;
         }
-        if(newPos.y + $moveLabel.outerHeight() > boardPos.top + $chatboard.outerHeight()) {
-          newPos.y = boardPos.top + $chatboard.outerHeight() - $moveLabel.outerHeight();
+        if(bottomRightPos.y + move.y > boardPos.top + $chatboard.outerHeight()) {
+          move.y = boardPos.top + $chatboard.outerHeight() - bottomRightPos.y;
         }
 
-        $moveLabel.css({
-          left : newPos.x,
-          top  : newPos.y
+        $('.groupselect').each(function(idx, elem) {
+          var pos = $(this).position();
+          $(this).css({
+            left : pos.left + move.x,
+            top  : pos.top  + move.y
+          });
+          // 移動情報をサーバーに送る
+          var sendValue = {
+            x : pos.left + move.x - $chatboard.position().left,
+            y : pos.top  + move.y - $chatboard.position().top,
+            chatId : $(this).attr('key')
+          };
+          if($(this).hasClass('label')) {
+            sendValue['className'] = 'label';
+          }
+          else {
+            sendValue['className'] = 'groupbox';
+          }
+          SOCKET.emit('moveLabel', sendValue);
         });
-        // 移動情報をサーバーに送る
-        SOCKET.emit('moveLabel', {
-          x : newPos.x - $chatboard.position().left,
-          y : newPos.y - $chatboard.position().top,
-          chatId : $moveLabel.attr('key')
-        });
+
         e.stopPropagation();
       }
     });
+
+  // ドラッグの範囲を表示する
+  var $dragfield = null;
+  var startPt = null;
+  $('#chatboard')
+    // マウスダウン時に範囲の開始位置を指定する
+    .mousedown(function(e) {
+      startPt = {x : e.pageX, y : e.pageY};
+      // ドラッグ範囲を表示するタグを取得する
+      $dragfield = $('.dragfield');
+      $dragfield
+        .css({
+          left: startPt.x,
+          top:  startPt.y
+        })
+        .height(0)
+        .width(0)
+        .show();
+
+      // ドラッグ中は文字の選択を無効にする
+      $('body').addClass('noneselect');
+      var keys = getKeys(e);
+      // Ctrlキーを押していない時はラベルの選択を解除する
+      if(!keys['ctrl']) {
+        $('.label:visible, .groupbox').removeClass('groupselect');
+      }
+    });
+  $(document)
+    // マウスアップ時はドラッグ表示タグをnullにしておく
+    .mouseup(function(e) {
+      // ドラッグを表示するタグがあるなら処理する
+      if($dragfield !== null) {
+        $dragfield.hide();
+        $dragfield = null;
+        $('body').removeClass('noneselect');
+      }
+    })
+    // マウスが移動時にドラッグの範囲を変更する
+    .mousemove(function(e) {
+      // ドラッグ範囲を表示するタグがあるなら処理する
+      if($dragfield !== null) {
+        var box = $dragfield.position();
+        box.width  = e.pageX - startPt.x;
+        box.height = e.pageY - startPt.y;
+        // 幅や高さがマイナスになったら左上の座標をその分動かす
+        if(box.width < 0) {
+          box.left = startPt.x + box.width;
+          box.width *= -1;
+        }
+        if(box.height < 0) {
+          box.top = startPt.y + box.height;
+          box.height *= -1;
+        }
+        sizeFix(box, $('#chatboard'));
+
+        $dragfield
+          .css({
+            left : box.left,
+            top  : box.top
+          })
+          .width(box.width)
+          .height(box.height);
+
+        $('.label:visible, .groupbox').each(function(index, label) {
+          var $label = $(label);
+          if(isBoxing($label, $dragfield)) {
+            $label.addClass('groupselect');
+          }
+          // Ctrlを押しているときは単純に選択を外さない方が良さそう
+          else {
+            $label.removeClass('groupselect');
+          }
+        });
+      }
+    });
+
+  // グループボックスのアコーディオンパネルの実装
+  $(document)
+    .on('click', '.groupbox img', function() {
+      var $img = $(this);
+      toggleAccordionPanel($img);
+      var $groupbox = $img.parent().parent();
+      SOCKET.emit('toggleAccordionPanel', {
+        groupBoxId : $groupbox.attr('key')
+      });
+    });
+
+  // グループボックスのタイトルの変更
+  $(document)
+    .on('dblclick', '.groupbox div', function() {
+      var $title = $('span', this);
+      $title.replaceWith($('<input type="text">').val($title.text()));
+    })
+    .on('keypress', '.groupbox input', function(e) {
+      // エンターキーが押されたら
+      if(e.which === 13) {
+        var $title = $(this);
+        var title = $title.val();
+        if(title.length <= 0) {
+          alert('タイトルは1文字以上にしてください。');
+          return;
+        }
+        var $groupbox = $title.parent().parent();
+        $title.replaceWith($('<span>').text(title));
+
+        SOCKET.emit('changeGroupTitle', {
+          groupBoxId : $groupbox.attr('key'),
+          title : title
+        });
+      }
+    });
+}
+
+// コンテキストメニューをセットする
+function setContextMenu() {
+  var pos = $('#chatboard').position();
+
+  $('#chatboard').showMenu({
+    opacity : 1.0,
+    query : '#chatboardmenu'
+  });
+  $chatboardmenu = $('#chatboardmenu');
+  // グルーピングを選択したら
+  $('li.grouping', $chatboardmenu).click(function(e) {
+    var groupkeys = new Array();
+    $('.groupselect').each(function(index, label) {
+      if($(label).hasClass('label')) {
+        groupkeys.push($(label).attr('key'));
+      }
+    });
+    if(groupkeys.length <= 0) {
+      alert('選択しているラベルがありません。');
+      return;
+    }
+    SOCKET.emit('grouping', {
+      roomId : ROOMID,
+      groupkeys : groupkeys,
+      x : e.pageX - pos.left,
+      y : e.pageY - pos.top
+    });
+  });
+  // アングルーピングを選択したら
+  $('li.ungrouping', $chatboardmenu).click(function() {
+    $('.groupselect.groupbox').each(function(index, groupBox) {
+      SOCKET.emit('ungrouping', {
+        groupBoxId : $(groupBox).attr('key')
+      });
+    });
+  });
 }
 
 // チャット内容を送信する
@@ -192,6 +439,17 @@ function postChat() {
   });
 }
 
+// アコーディオンパネルの開閉を行う
+function toggleAccordionPanel($img) {
+  if($img.attr('src') === 'images/plus.png') {
+    $img.attr('src', 'images/minus.png');
+  }
+  else {
+    $img.attr('src', 'images/plus.png');
+  }
+  $('+ul', $img.parent()).slideToggle(500);
+}
+
 // chatというイベントを受信したらチャットを追加する
 SOCKET.on('chat', function(chat) {
   // ルームIDが違うなら何もしない
@@ -223,9 +481,66 @@ SOCKET.on('toggleChat', function(chat) {
 // moveLabelというイベントを受信したら指定されたラベルの座標を移動する
 SOCKET.on('moveLabel', function(label) {
   var pos = $('#chatboard').position();
-  var $moveLabel = $('.label[key=' + label.chatId + ']');
+  var $moveLabel = $('.' + label.className + '[key=' + label.chatId + ']');
   $moveLabel.css({
     left : label.x + pos.left,
     top  : label.y + pos.top
   });
+});
+
+// groupingというイベントを受信したら選択されたチャットをグループボックスにまとめる
+SOCKET.on('grouping', function(groupBox) {
+  // ルームIDが違うなら何もしない
+  if(groupBox.roomId !== ROOMID) {
+    return;
+  }
+
+  // グルーピングされるラベルはチャットボードから削除する
+  $.each(groupBox.childs, function(index, chatId) {
+    $('.label[key="' + chatId + '"]').remove();
+  });
+
+  $.get('/chatmsgs', {roomId : ROOMID}, function(chats) {
+    setGroupBox($('#chatboard'), groupBox, chats);
+  });
+});
+
+// ungroupingというイベントを受信したら選択されたグループボックスを削除して、ラベルに戻す
+SOCKET.on('ungrouping', function(ungroupBox) {
+  // ルームIDが違うなら何もしない
+  if(ungroupBox.roomId !== ROOMID) {
+    return;
+  }
+
+  // 指定されたグループボックスは削除する
+  $('.groupbox[key="' + ungroupBox.ungroupBoxId + '"]').remove();
+
+  // グループボックスにあったチャット内容をラベルに作り直す
+  $.each(ungroupBox.chats, function(index, chat) {
+    setLabel($('#chatboard'), chat);
+  });
+});
+
+// toggleAccordionPanelというイベントを受信したら選択された
+// グループボックスの開閉状態をトグルする
+SOCKET.on('toggleAccordionPanel', function(toggleBox) {
+  // ルームIDが違うなら何もしない
+  if(toggleBox.roomId !== ROOMID) {
+    return;
+  }
+
+  var $toggleBox = $('.groupbox[key="' + toggleBox.groupBoxId + '"]');
+  toggleAccordionPanel($('img', $toggleBox));
+});
+
+// changeGroupTitleというイベントを受信したら
+// 選択されたグループボックスのタイトルを変更する
+SOCKET.on('changeGroupTitle', function(changeBox) {
+  // ルームIDが違うなら何もしない
+  if(changeBox.roomId !== ROOMID) {
+    return;
+  }
+
+  var $changeBox = $('.groupbox[key="' + changeBox.groupBoxId + '"]');
+  $('span', $changeBox).text(changeBox.title);
 });

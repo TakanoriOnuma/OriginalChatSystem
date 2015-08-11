@@ -298,6 +298,13 @@ function setHandlers() {
           'left' : newPos.x,
           'top'  : newPos.y
         });
+
+        // サーバーにもこの情報を送る
+        SOCKET.emit('moveTrashbox', {
+          x : newPos.x - boardPos.left,
+          y : newPos.y - boardPos.top,
+          roomId : ROOMID
+        });
       }
     });
 
@@ -543,6 +550,20 @@ SOCKET.on('moveLabel', function(label) {
   $moveLabel.css({
     left : label.x + pos.left,
     top  : label.y + pos.top
+  });
+});
+
+// moveTrashboxというイベントを受信したらtrashboxを指定された座標に移動する
+SOCKET.on('moveTrashbox', function(trashbox) {
+  // ルームIDが違うなら何もしない
+  if(trashbox.roomId !== ROOMID) {
+    return;
+  }
+
+  var pos = $('#chatboard').position();
+  $('.trashbox').css({
+    left : trashbox.x + pos.left,
+    top  : trashbox.y + pos.top
   });
 });
 

@@ -22,7 +22,6 @@ body {
 
 #container {
   border: 1px solid black;
-  width: 1000px;
   display: -moz-box;
   display: -webkit-box;
   display: box;
@@ -37,9 +36,6 @@ body {
 #chatboard {
   background-color: lightblue;
   padding: 10px;
-  -moz-box-flex: 1.0;
-  -webkit-box-flex: 1.0;
-  -box-flex: 1.0;
   width: 200px;
 }
 

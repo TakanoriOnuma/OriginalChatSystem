@@ -209,6 +209,28 @@ function setHandlers() {
   $(document)
     // マウスアップ時に移動対象を外す
     .mouseup(function(e) {
+      if($moveLabel !== null) {
+        var $trashbox = $('.trashbox');
+        var delFlag = false;
+        $('.groupselect').each(function(idx, elem) {
+          var $label = $(this);
+          // ゴミ箱の中にあれば削除フラグが立つ
+          if($label.position().left <= $trashbox.position().left &&
+            $label.position().left + $label.outerWidth() >= $trashbox.position().left + $trashbox.outerWidth()) {
+            // 縦はどちらかを含んでいたらOKとする
+            if(($label.position().top >= $trashbox.position().top &&
+              $label.position().top <= $trashbox.position().top + $trashbox.outerHeight()) ||
+              ($label.position().top + $label.outerHeight() >= $trashbox.position().top &&
+              $label.position().top + $label.outerHeight() <= $trashbox.position().top + $trashbox.outerHeight())) {
+                delFlag = true;
+            }
+          }
+        });
+
+        if(delFlag && confirm('選択したラベルを削除してもよろしいですか？')) {
+          delLabels();
+        }
+      }
       $moveLabel = null;
       $moveTrashbox = null;
       $('body').removeClass('noneselect');
@@ -456,6 +478,11 @@ function setContextMenu() {
       });
     });
   });
+}
+
+// 選択されたラベルを削除する
+function delLabels() {
+  alert('delLabels');
 }
 
 // チャット内容を送信する

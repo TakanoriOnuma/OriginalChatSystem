@@ -43,7 +43,7 @@ var roomSchema = new Schema({
   created   : { type: Date, default: Date.now },
   password  : String,
   boardSize : { type: Object, default: {width: 650, height: 550} },
-  trashPos  : { type: Object, default: {x: 0, y: 0} }
+  trashPos  : { type: Object, default: {x: 0, y: 440} }
 });
 mongoose.model('Room', roomSchema);
 

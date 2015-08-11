@@ -45,6 +45,7 @@ function loadTemplates() {
 function loadRoom() {
   var $topic = $('#topic');
   var $chatboard = $('#chatboard');
+  var $trashbox = $('.trashbox');
 
   $.get('/room', {roomId : ROOMID}, function(room) {
     $topic
@@ -59,12 +60,11 @@ function loadRoom() {
       'width'  : room.boardSize.width,
       'height' : room.boardSize.height
     });
-
     // まだ登録されてなかったら初期化しておく
     if(room.trashPos == null) {
-      room.trashPos = { x : 0, y : $chatboard.outerHeight() - 130 };
+      room.trashPos = { x : 0, y : $chatboard.outerHeight() - $trashbox.outerHeight() };
     }
-    $('.trashbox').css({
+    $trashbox.css({
       'left' : room.trashPos.x + $chatboard.position().left,
       'top'  : room.trashPos.y + $chatboard.position().top
     });
@@ -195,14 +195,27 @@ function setHandlers() {
       e.stopPropagation();
     });
 
+  // ゴミ箱の移動
+  var $moveTrashbox = null;
+  $('.trashbox').mousedown(function(e) {
+    $moveTrashbox = $(this);
+    pos.x = e.pageX - $(this).position().left;
+    pos.y = e.pageY - $(this).position().top;
+
+    $('body').addClass('noneselect');
+    e.stopPropagation();    // バブリングを防ぐ
+  });
+
   $(document)
     // マウスアップ時に移動対象を外す
     .mouseup(function(e) {
       $moveLabel = null;
+      $moveTrashbox = null;
       $('body').removeClass('noneselect');
     })
     // マウス移動時に移動対象があれば移動する
     .mousemove(function(e) {
+      // ラベルを動かすなら
       if($moveLabel !== null) {
         var move = {
           x : e.pageX - ($moveLabel.position().left + pos.x),
@@ -261,6 +274,30 @@ function setHandlers() {
         });
 
         e.stopPropagation();
+      }
+      // ゴミ箱を動かすなら
+      else if($moveTrashbox !== null) {
+        var newPos = { x : e.pageX - pos.x, y : e.pageY - pos.y };
+        var boardPos = $chatboard.position();
+
+        // チャットボードの枠を越えないように調節する
+        if(newPos.x < boardPos.left) {
+          newPos.x = boardPos.left;
+        }
+        if(newPos.y < boardPos.top) {
+          newPos.y = boardPos.top;
+        }
+        if(newPos.x + $moveTrashbox.outerWidth() > boardPos.left + $chatboard.outerWidth()) {
+          newPos.x = boardPos.left + $chatboard.outerWidth() - $moveTrashbox.outerWidth();
+        }
+        if(newPos.y + $moveTrashbox.outerHeight() > boardPos.top + $chatboard.outerHeight()) {
+          newPos.y = boardPos.top + $chatboard.outerHeight() - $moveTrashbox.outerHeight();
+        }
+
+        $moveTrashbox.css({
+          'left' : newPos.x,
+          'top'  : newPos.y
+        });
       }
     });
 

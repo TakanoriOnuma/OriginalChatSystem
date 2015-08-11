@@ -86,8 +86,12 @@ body {
   display: none;
 }
 
-.trashbox {
+div.trashbox {
   position: absolute;
+  background-image: url('../images/trashbox.png');
+  width:  96px;
+  height: 110px;
+  cursor: default;
 }
 
 #chatboardmenu {
